@@ -1,1 +1,91 @@
-/* css/print.css */
+/*
+  The printable monitoring form.
+
+  There is no PDF library in this project, so "Export as PDF" renders the form
+  at A4 metrics and hands it to the browser's own print dialog, where "Save as
+  PDF" is a destination. The one thing the browser will not let us control is
+  its own header and footer; the export dialog says so.
+*/
+
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+.print-only { display: none; }
+
+@media print {
+  /* Everything that is chrome rather than content. */
+  .sidebar, .topbar, .scrim, .toasts, .offline-banner,
+  .page-header-actions, .toolbar, .filters, .pager,
+  .menu, .tooltip, #layers, .map-frame {
+    display: none !important;
+  }
+
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .vibrancy-wash { background-image: none !important; }
+
+  .app-frame { display: block; max-width: none; }
+  .page-body, .page-header { padding: 0 !important; }
+
+  .print-only { display: block; }
+
+  .card, .glass, .glass-strong, .surface-card {
+    background: #fff !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* The form is a grid of ruled cells, the way the paper version is. */
+  .print-report { font-size: 9pt; }
+  .print-report h1 { font-size: 13pt; font-weight: 700; margin-bottom: 2mm; }
+  .print-report .print-meta { font-size: 8.5pt; margin-bottom: 4mm; }
+
+  .print-report table { width: 100%; border-collapse: collapse; }
+  .print-report th,
+  .print-report td {
+    border: 0.4pt solid #000 !important;
+    padding: 1.4mm 1.8mm;
+    font-size: 8.5pt;
+    vertical-align: top;
+    text-align: left;
+  }
+  .print-report th {
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #000 !important;
+    background: #eee !important;
+    height: auto;
+  }
+  .print-report thead { display: table-header-group; }
+  .print-report tr { page-break-inside: avoid; }
+
+  /* On paper a tick is a tick; the coloured pill means nothing in grey. */
+  .functional-mark {
+    background: none !important;
+    color: #000 !important;
+    width: auto;
+    height: auto;
+    display: inline;
+  }
+  .badge, .badge-sys {
+    background: none !important;
+    color: #000 !important;
+    padding: 0;
+  }
+  .badge-dot, .sys-dot { display: none !important; }
+
+  /* Never a card stack on paper, whatever the paper width works out to. */
+  .table-stack, .table-stack tbody, .table-stack tr, .table-stack td { display: revert !important; }
+  .table-stack thead { display: table-header-group !important; }
+  .table-stack td[data-label]::before { content: none !important; }
+  .table-stack td[data-hidden-mobile] { display: table-cell !important; }
+}

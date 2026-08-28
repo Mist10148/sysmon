@@ -1,1 +1,252 @@
-/* css/map.css */
+/*
+  The dashboard map.
+
+  Two things here are worth reading before changing anything.
+
+  1. The pins are drawn in CSS, not shipped as images. A pin's body is its
+     health colour and its collar is its system's identity colour, so one glyph
+     answers both "is it up" and "which system is this" without a legend.
+
+  2. The targets rail has three layouts and only one DOM position. It always
+     sits after the map inside the same relative frame; what changes is whether
+     it floats over the map, sits beside it, or stacks under it. Moving the node
+     on resize would force Leaflet to re-measure and is exactly the kind of
+     thing that leaves a grey half-rendered map behind.
+*/
+
+.map-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.map-shell {
+  position: relative;
+  border-radius: var(--radius-3xl);
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-contact), var(--shadow-ambient);
+  height: 55svh;
+  min-height: 320px;
+}
+@media (min-width: 1024px) {
+  .map-shell { min-height: 560px; height: auto; flex: 1 1 0%; }
+  .map-frame { flex-direction: row; align-items: stretch; }
+}
+
+.map-canvas { position: absolute; inset: 0; }
+
+/* When Leaflet is unavailable the pins land on this instead of on tiles. */
+.map-fallback {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(var(--hairline) 1px, transparent 1px) 0 0 / 100% 48px,
+    linear-gradient(90deg, var(--hairline) 1px, transparent 1px) 0 0 / 48px 100%,
+    var(--sunken);
+}
+.map-fallback-note {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0.75rem;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+/* Below 1024px a one-finger drag must scroll the page, not pan the map. */
+.map-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.06);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.map-gate span {
+  border-radius: 999px;
+  padding: 0.375rem 0.75rem;
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-contact);
+}
+
+/* ---------- the targets rail, in three layouts ---------- */
+
+.rail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  min-width: 0;
+}
+.rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 0.25rem;
+}
+.rail-list { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+
+/* Below 768px: one column of cards under the map. */
+/* 768-1023px: two columns of cards under the map. */
+@media (min-width: 768px) {
+  .rail-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+}
+
+/* 1024-1279px: a fixed column beside the map. */
+@media (min-width: 1024px) {
+  .rail {
+    width: var(--rail-w);
+    flex: none;
+    align-content: start;
+    max-height: 560px;
+    overflow-y: auto;
+    border-radius: var(--radius-3xl);
+    padding: 0.75rem;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-contact), var(--shadow-ambient);
+  }
+  .rail-list { display: flex; }
+}
+
+/* 1280px and up: floating over the map. */
+@media (min-width: 1280px) {
+  .map-frame { display: block; }
+  .map-shell { min-height: 620px; }
+  .rail {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: var(--rail-w);
+    max-height: none;
+    z-index: 600;
+    box-shadow: var(--shadow-float);
+  }
+}
+
+/* ---------- Leaflet, restyled from the tokens ---------- */
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: var(--sunken);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+.leaflet-container a { color: var(--accent); }
+
+/*
+  Dark mode inverts the tiles rather than shipping a second tile source. It is
+  a compromise - inverted maps look slightly odd - but it is one request fewer
+  and it keeps working if the tile provider changes.
+*/
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.86) saturate(0.72) contrast(0.94);
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+  border-radius: 1rem;
+}
+.leaflet-popup-content { margin: 0.75rem 0.875rem; font-size: 12px; }
+.leaflet-popup-close-button { color: var(--ink-faint) !important; }
+
+.leaflet-bar,
+.leaflet-control-attribution {
+  background: var(--glass-bg-strong) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--hairline) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: var(--shadow-contact) !important;
+  color: var(--ink-muted) !important;
+  overflow: hidden;
+}
+.leaflet-bar a {
+  background: transparent !important;
+  color: var(--ink) !important;
+  border-bottom-color: var(--hairline) !important;
+}
+.leaflet-bar a:hover { background: var(--sunken) !important; }
+.leaflet-control-attribution { font-size: 10px; padding: 0 0.4rem; }
+
+/* ---------- the pin ---------- */
+
+.sysmon-pin {
+  display: grid;
+  place-items: center;
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 2.5px solid var(--surface);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.28);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  transition: transform 240ms var(--ease-spring);
+}
+.sysmon-pin[data-status="Functional"] { background: #3b9e63; }
+.sysmon-pin[data-status="Restored"] { background: #d9a13b; }
+.sysmon-pin[data-status="Down"] { background: #c8483c; }
+.sysmon-pin[data-status="Unknown"] { background: #8a8782; }
+
+/* The collar is the system's identity colour, drawn outside the white ring. */
+.sysmon-pin[data-sys] { box-shadow: 0 0 0 3px var(--sys), 0 2px 6px rgb(0 0 0 / 0.28); }
+
+.sysmon-pin[data-selected="true"] { transform: scale(1.28); z-index: 500; }
+
+/* Pulses while a sweep is in flight, so it is obvious which sites are busy. */
+.sysmon-pin-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  color: inherit;
+  opacity: 0.55;
+  animation: sysmon-pulse 1.9s var(--ease-spring) infinite;
+}
+@keyframes sysmon-pulse {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  70%, 100% { transform: scale(1.7); opacity: 0; }
+}
+
+/* The mini map in the Locations editor. */
+.map-picker {
+  position: relative;
+  height: 200px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+}
+.map-picker-hint {
+  position: absolute;
+  inset-inline: 0.5rem;
+  bottom: 0.5rem;
+  z-index: 500;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-muted);
+  pointer-events: none;
+}

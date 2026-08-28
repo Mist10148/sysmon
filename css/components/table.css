@@ -1,1 +1,138 @@
-/* css/components/table.css */
+/*
+  Tables, and the transform that turns them into cards on a phone.
+
+  `.table-stack` is the single most important responsive mechanism in SysMon.
+  Below 768px a table is not a table: the header row is removed, every row
+  becomes a card, and every cell becomes a label/value pair whose label comes
+  from its own data-label attribute. Five tables share it, so it is written once.
+
+  The cell contract:
+    data-primary        the headline of the card; no label, full width
+    data-label="LHIO"   renders that label to the left of the value
+    data-hidden-mobile  dropped entirely on a phone (the row-number column)
+    data-actions        right-aligned (the row menu)
+*/
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.table { width: 100%; }
+
+.table th {
+  height: 2.5rem;
+  padding-inline: 0.75rem;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--hairline);
+}
+.table td {
+  padding: 0.625rem 0.75rem;
+  font-size: 13px;
+  vertical-align: middle;
+}
+.table tbody tr { border-bottom: 1px solid var(--hairline); }
+.table tbody tr:last-child { border-bottom-width: 0; }
+.table tbody tr:hover { background: color-mix(in srgb, var(--sunken) 60%, transparent); }
+
+.table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.table .cell-mono { font-family: var(--font-mono); font-size: 12px; }
+.table .cell-sub { font-size: 11px; color: var(--ink-muted); margin-top: 1px; }
+
+/* Sortable column heads. */
+.sort-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  padding: 0;
+}
+.sort-head:hover { color: var(--ink); }
+.sort-head .icon { width: 0.75rem; height: 0.75rem; opacity: 0; }
+.sort-head[aria-sort] .icon { opacity: 1; }
+
+/* Row action menu trigger sits flush right. */
+.table td[data-actions] { text-align: right; white-space: nowrap; }
+
+/* The reorder arrows. Disabled whenever the list is not in manual order. */
+.reorder { display: inline-flex; gap: 2px; }
+
+/* ---------- pagination ---------- */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.pager-controls { display: flex; align-items: center; gap: 0.5rem; }
+
+/* ---------- the phone transform ---------- */
+
+@media (max-width: 767.98px) {
+  .table-stack,
+  .table-stack tbody,
+  .table-stack tr,
+  .table-stack td {
+    display: block;
+    width: auto;
+  }
+
+  .table-stack thead { display: none; }
+  .table-stack td[data-hidden-mobile] { display: none; }
+
+  .table-stack tr {
+    padding: 0.75rem 0.25rem;
+  }
+  .table-stack tbody tr:hover { background: none; }
+
+  .table-stack td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.25rem 0.75rem;
+    text-align: left !important;
+  }
+
+  .table-stack td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* The headline of the card: no label, and the full width to itself. */
+  .table-stack td[data-primary] {
+    display: block;
+    padding-block: 0.375rem;
+  }
+
+  .table-stack td[data-actions] { justify-content: flex-end; }
+
+  /* Empty-state and loading rows span everything and centre. */
+  .table-stack td[colspan] {
+    display: block;
+    text-align: center !important;
+  }
+  .table-stack td[colspan]::before { content: none; }
+
+  .table-stack .num { text-align: right; }
+}

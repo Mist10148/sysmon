@@ -1,1 +1,92 @@
-/* css/pages.css */
+/*
+  The handful of rules that belong to exactly one screen. Anything used twice
+  has been moved into components/ instead.
+*/
+
+/* ---------- dashboard ---------- */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+@media (min-width: 768px) {
+  .summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* The list view: a glass panel holding the status cards. */
+.card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+}
+@media (min-width: 640px) { .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* ---------- history ---------- */
+
+/* The row number column is narrow and never wraps. */
+.col-no { width: 3.5rem; }
+.col-actions { width: 3rem; }
+.col-active { width: 4.5rem; }
+.col-order { width: 5rem; }
+
+/* Two lines in one cell: the site and its address underneath. */
+.stacked-primary { font-weight: 500; }
+.stacked-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-top: 1px;
+}
+
+.override-note {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+/* ---------- analytics ---------- */
+
+.tiles-4 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+@media (min-width: 768px) {
+  .tiles-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+
+/* ---------- settings ---------- */
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+@media (min-width: 768px) {
+  .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.setting-rows { display: flex; flex-direction: column; gap: 0.875rem; }
+
+.status-box {
+  border-radius: var(--radius-md);
+  background: var(--sunken);
+  padding: 0.625rem 0.75rem;
+  font-size: 12px;
+}
+.status-box-line { color: var(--ink-muted); }
+.status-box-line strong { color: var(--ink); font-weight: 550; }
+.status-box-error { color: var(--down); margin-top: 0.25rem; }
+
+/* The file input that Import hides behind a button. */
+.file-input { display: none; }

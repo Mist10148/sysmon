@@ -1,1 +1,210 @@
-/* css/components/overlay.css */
+/*
+  Dialogs, menus, tooltips and toasts.
+
+  Dialogs are native <dialog> elements opened with showModal(). That decision
+  buys the focus trap, the initial focus, Escape-to-close, an inert background
+  and top-layer stacking above Leaflet - all of which would otherwise be a few
+  hundred lines of code that is wrong in some browser.
+
+  Below 640px a dialog is a bottom sheet; above it, a centred modal. Same
+  element, same markup, only this file changes.
+*/
+
+dialog.dialog {
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  max-height: none;
+  width: auto;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  overflow: visible;
+}
+dialog.dialog::backdrop {
+  background: rgb(0 0 0 / 0.25);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: sysmon-fade 200ms var(--ease-spring);
+}
+
+.dialog-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: 92dvh;
+  overflow-y: auto;
+  border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
+  padding: 1.25rem;
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  animation: sysmon-sheet 320ms var(--ease-spring);
+}
+
+/* Bottom sheet: pinned to the bottom edge, full width. */
+dialog.dialog {
+  inset: auto 0 0 0;
+  width: 100%;
+}
+
+/* The little grabber that says "this can be dragged down". */
+.dialog-grabber {
+  align-self: center;
+  width: 2.25rem;
+  height: 0.25rem;
+  flex: none;
+  border-radius: 999px;
+  background: var(--hairline-strong);
+  margin-bottom: 0.75rem;
+}
+
+.dialog-title { font-size: 16px; font-weight: 600; letter-spacing: -0.014em; }
+.dialog-desc { font-size: 13px; color: var(--ink-muted); margin-top: 0.25rem; }
+.dialog-content { margin-top: 1rem; min-width: 0; }
+.dialog-foot {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  dialog.dialog {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: min(32rem, calc(100vw - 2rem));
+    transform: translate(-50%, -50%);
+  }
+  dialog.dialog[data-size="md"] { width: min(28rem, calc(100vw - 2rem)); }
+  .dialog-panel {
+    border-radius: var(--radius-3xl);
+    padding: 1.5rem;
+    max-height: 86dvh;
+    animation: sysmon-pop-in 180ms var(--ease-spring);
+  }
+  .dialog-grabber { display: none; }
+  .dialog-foot { flex-direction: row; justify-content: flex-end; }
+}
+
+@keyframes sysmon-pop-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* A block of raw output inside a dialog. */
+.raw-output {
+  border-radius: var(--radius-md);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  padding: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  max-height: 50dvh;
+  overflow: auto;
+}
+
+/* A destructive warning block inside an alert dialog. */
+.warn-block {
+  border-radius: var(--radius-md);
+  background: var(--down-soft);
+  color: var(--down);
+  padding: 0.625rem 0.75rem;
+  font-size: 12px;
+}
+.info-block {
+  border-radius: var(--radius-md);
+  background: var(--sunken);
+  padding: 0.625rem 0.75rem;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+/* ---------- popover menus ---------- */
+
+.menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 11rem;
+  max-width: min(20rem, calc(100vw - 1.5rem));
+  border-radius: var(--radius-xl);
+  padding: 0.3rem;
+  animation: sysmon-pop-in 140ms var(--ease-spring);
+}
+.menu-label {
+  padding: 0.375rem 0.625rem 0.25rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--ink-faint);
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  text-align: left;
+  color: var(--ink);
+}
+.menu-item:hover, .menu-item[data-active="true"] { background: var(--sunken); }
+.menu-item .icon { color: var(--ink-muted); }
+.menu-item-desc { font-size: 11px; color: var(--ink-faint); }
+.menu-item[data-tone="destructive"] { color: var(--down); }
+.menu-item[data-tone="destructive"] .icon { color: var(--down); }
+.menu-sep { height: 1px; margin: 0.25rem 0.25rem; background: var(--hairline); }
+
+.tooltip {
+  position: fixed;
+  z-index: 70;
+  max-width: 16rem;
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.5rem;
+  font-size: 11.5px;
+  line-height: 1.4;
+  animation: sysmon-fade 120ms var(--ease-spring);
+  pointer-events: none;
+}
+
+/* ---------- toasts ---------- */
+
+.toasts {
+  position: fixed;
+  z-index: 80;
+  right: max(0.75rem, env(safe-area-inset-right));
+  left: max(0.75rem, env(safe-area-inset-left));
+  bottom: calc(max(0.75rem, env(safe-area-inset-bottom)) + 0.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+@media (min-width: 640px) {
+  .toasts { left: auto; width: 22rem; }
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  border-radius: var(--radius-xl);
+  padding: 0.75rem 0.875rem;
+  pointer-events: auto;
+  animation: sysmon-sheet 260ms var(--ease-spring);
+  border-left: 3px solid transparent;
+}
+.toast[data-leaving="true"] { animation: sysmon-fade 160ms var(--ease-spring) reverse forwards; }
+.toast-title { font-size: 13px; font-weight: 550; letter-spacing: -0.005em; }
+.toast-desc { font-size: 12px; color: var(--ink-muted); margin-top: 0.1rem; }
+.toast .icon { margin-top: 1px; }
+
+.toast[data-tone="success"] { border-left-color: var(--ok); }
+.toast[data-tone="success"] > .icon { color: var(--ok); }
+.toast[data-tone="error"] { border-left-color: var(--down); }
+.toast[data-tone="error"] > .icon { color: var(--down); }
+.toast[data-tone="warning"] { border-left-color: var(--warn); }
+.toast[data-tone="warning"] > .icon { color: var(--warn-ink); }
+.toast[data-tone="loading"] > .icon { color: var(--accent); }
+.toast[data-tone="info"] > .icon { color: var(--ink-faint); }

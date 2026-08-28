@@ -1,1 +1,147 @@
-/* css/components/badge.css */
+/*
+  Badges.
+
+  Two families that must never be confused: health (ok / warn / down / unknown)
+  and system identity (the eight --sys-* colours). A blue system is not a
+  healthy one, so the two never share a colour or a shape.
+
+  Every badge carries text as well as colour. Three of the light system colours
+  fall under 3:1 against their soft fill, so colour alone is never the cue.
+*/
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badge-sm { padding: 0.05rem 0.45rem; font-size: 11px; }
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+/* ---------- health ---------- */
+
+.badge[data-status="Functional"] { background: var(--ok-soft); color: var(--ok); }
+.badge[data-status="Restored"] { background: var(--warn-soft); color: var(--warn-ink); }
+.badge[data-status="Down"] { background: var(--down-soft); color: var(--down); }
+.badge[data-status="Unknown"] { background: var(--unknown-soft); color: var(--unknown); }
+
+/* The History form's tick or cross. */
+.functional-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.functional-mark[data-on="true"] { background: var(--ok-soft); color: var(--ok); }
+.functional-mark[data-on="false"] { background: var(--down-soft); color: var(--down); }
+
+/* ---------- system identity ---------- */
+
+.sys-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+}
+
+.badge-sys {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/*
+  One block per colour rather than a computed mix, because the soft fill is a
+  12% tint of the identity colour and the text is the colour at full strength.
+*/
+[data-sys="blue"] { --sys: var(--sys-blue); }
+[data-sys="orange"] { --sys: var(--sys-orange); }
+[data-sys="teal"] { --sys: var(--sys-teal); }
+[data-sys="amber"] { --sys: var(--sys-amber); }
+[data-sys="rose"] { --sys: var(--sys-rose); }
+[data-sys="green"] { --sys: var(--sys-green); }
+[data-sys="violet"] { --sys: var(--sys-violet); }
+[data-sys="slate"] { --sys: var(--sys-slate); }
+
+.sys-dot[data-sys] { background: var(--sys); }
+.badge-sys[data-sys] {
+  background: color-mix(in srgb, var(--sys) 12%, transparent);
+  color: var(--sys);
+}
+.dark .badge-sys[data-sys] {
+  background: color-mix(in srgb, var(--sys) 18%, transparent);
+}
+
+/* ---------- system-type filter chips ---------- */
+
+.chips {
+  display: flex;
+  gap: 0.375rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+@media (min-width: 768px) {
+  .chips { flex-wrap: wrap; overflow: visible; }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  height: 2rem;
+  padding-inline: 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  transition: background-color 160ms var(--ease-spring), color 160ms var(--ease-spring);
+}
+.chip:hover { color: var(--ink); }
+.chip[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--hairline-strong);
+  box-shadow: var(--shadow-contact);
+}
+
+/* ---------- activity feed severity badge ---------- */
+
+.act-badge {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.act-badge[data-sev="critical"] { color: var(--down); }
+.act-badge[data-sev="warning"] { color: var(--warn-ink); }
+.act-badge[data-sev="success"] { color: var(--ok); }
+.act-badge[data-sev="info"] { color: var(--ink-muted); }

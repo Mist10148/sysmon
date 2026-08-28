@@ -1,1 +1,120 @@
-/* css/components/button.css */
+/*
+  Buttons.
+
+  Sizes are deliberately larger on a phone than on a desktop: 44px is the
+  smallest target a thumb hits reliably, and 32-36px is what a pointer expects.
+  The size classes carry both, which is why they all have a `sm:` step.
+*/
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.5rem;
+  padding-inline: 1rem;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 160ms var(--ease-spring),
+              color 160ms var(--ease-spring),
+              box-shadow 160ms var(--ease-spring),
+              transform 120ms var(--ease-spring);
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn .icon { width: 1rem; height: 1rem; }
+
+/* variants */
+.btn-default {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-contact);
+}
+.btn-default:hover:not(:disabled) { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-contact);
+}
+.btn-secondary:hover:not(:disabled) { background: var(--sunken); }
+
+.btn-ghost { color: var(--ink-muted); }
+.btn-ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--sunken) 80%, transparent);
+  color: var(--ink);
+}
+
+.btn-glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  box-shadow: var(--shadow-contact);
+}
+
+.btn-destructive {
+  background: var(--down);
+  color: #fff;
+  box-shadow: var(--shadow-contact);
+}
+.btn-destructive:hover:not(:disabled) { filter: brightness(0.94); }
+
+.btn-link {
+  height: auto;
+  padding: 0;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.btn-link:active:not(:disabled) { transform: none; }
+
+/* sizes */
+.btn-sm { height: 2.25rem; padding-inline: 0.75rem; font-size: 13px; }
+.btn-lg { height: 2.75rem; padding-inline: 1.5rem; }
+.btn-icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+.btn-icon-sm { width: 2.25rem; height: 2.25rem; padding: 0; }
+
+@media (min-width: 640px) {
+  .btn-sm { height: 2rem; }
+  .btn-icon-sm { width: 2rem; height: 2rem; }
+}
+
+/* ---------- segmented control ---------- */
+
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+}
+.segmented-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 2.25rem;
+  padding-inline: 0.75rem;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  transition: background-color 180ms var(--ease-spring), color 180ms var(--ease-spring),
+              box-shadow 180ms var(--ease-spring);
+}
+.segmented-item[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-contact);
+}
+.segmented-sm .segmented-item { height: 2rem; padding-inline: 0.625rem; font-size: 12px; }
+
+@media (min-width: 640px) {
+  .segmented-item { height: 2rem; }
+  .segmented-sm .segmented-item { height: 1.75rem; }
+}

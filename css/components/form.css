@@ -1,1 +1,168 @@
-/* css/components/form.css */
+/*
+  Fields.
+
+  Text is 16px below 640px and 13px above it. That is not a style choice: iOS
+  Safari zooms the page when a field with text under 16px is focused, and the
+  zoom is far more disruptive than the slightly larger type.
+*/
+
+.field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 16px;
+  box-shadow: var(--shadow-contact);
+  transition: border-color 160ms var(--ease-spring), box-shadow 160ms var(--ease-spring);
+}
+.field::placeholder { color: var(--ink-faint); }
+.field:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.field[aria-invalid="true"] { border-color: var(--down); }
+
+input.field { height: 2.5rem; }
+textarea.field { min-height: 5rem; resize: vertical; line-height: 1.45; }
+
+@media (min-width: 640px) {
+  .field { font-size: 13px; }
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  margin-bottom: 0.3rem;
+}
+.field-hint { font-size: 11px; color: var(--ink-faint); margin-top: 0.3rem; }
+.field-error { font-size: 11px; color: var(--down); margin-top: 0.3rem; }
+
+/* ---------- select ---------- */
+/*
+  Native <select> throughout. Every select in SysMon picks a value rather than
+  running a command, and native wins the phone wheel, the keyboard and the
+  screen reader outright. Only the chevron and the box are ours.
+*/
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6862' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  background-size: 1rem 1rem;
+  cursor: pointer;
+}
+.dark .select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a9a49c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/*
+  The History status column. Borderless until hovered or focused, and tinted by
+  the value it holds, so a column of them reads as status rather than as a row
+  of controls.
+*/
+.select-bare {
+  border-color: transparent;
+  background-color: transparent;
+  box-shadow: none;
+  height: 1.75rem;
+  padding: 0 1.5rem 0 0.5rem;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 999px;
+  background-position: right 0.3rem center;
+  background-size: 0.85rem 0.85rem;
+  width: auto;
+  max-width: 100%;
+}
+.select-bare:hover { border-color: var(--hairline); }
+.select-bare[data-tone="Functional"] { background-color: var(--ok-soft); color: var(--ok); }
+.select-bare[data-tone="Restored"] { background-color: var(--warn-soft); color: var(--warn-ink); }
+.select-bare[data-tone="Down"] { background-color: var(--down-soft); color: var(--down); }
+
+/* ---------- switch ---------- */
+/*
+  A real checkbox with the iOS pill drawn over it, so the label, the keyboard
+  and the form semantics all come for free.
+*/
+.switch {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: none;
+  width: 51px;
+  height: 31px;
+  border-radius: 999px;
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  cursor: pointer;
+  transition: background-color 220ms var(--ease-spring);
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.28);
+  transition: transform 260ms var(--ease-spring);
+}
+.switch:checked { background: var(--ok); border-color: transparent; }
+.switch:checked::after { transform: translateX(20px); }
+.switch:disabled { cursor: not-allowed; }
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.switch-row-label { font-size: 13px; }
+.switch-row-hint { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+
+/* ---------- search field ---------- */
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.search > .icon {
+  position: absolute;
+  left: 0.6rem;
+  color: var(--ink-faint);
+}
+.search .field { padding-left: 2rem; padding-right: 2rem; }
+.search-clear {
+  position: absolute;
+  right: 0.35rem;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  color: var(--ink-faint);
+}
+.search-clear:hover { background: var(--sunken); color: var(--ink); }
+
+/* ---------- fieldset grid used by the editor dialogs ---------- */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .form-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

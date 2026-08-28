@@ -1,1 +1,160 @@
-/* css/components/misc.css */
+/*
+  The rest: skeletons, inline editing, toolbars, filter cards and the small
+  pieces that do not warrant a file of their own.
+*/
+
+/* ---------- skeleton ---------- */
+
+.skeleton {
+  border-radius: var(--radius-md);
+  background: var(--sunken);
+  animation: sysmon-pulse-op 1.6s var(--ease-spring) infinite;
+}
+@keyframes sysmon-pulse-op {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* ---------- list toolbar ---------- */
+/*
+  Search on the left, then whatever narrows the list, then the count. Below
+  768px it also carries the sort control, because the card stack has no column
+  headers to click.
+*/
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.toolbar-count {
+  font-size: 12px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+.toolbar .search { flex: 1 1 12rem; }
+.toolbar-sort { display: flex; align-items: center; gap: 0.375rem; }
+@media (min-width: 768px) {
+  .toolbar-sort { display: none; }
+}
+
+/* ---------- filter card ---------- */
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.625rem;
+}
+@media (min-width: 640px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .filters { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .filters-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+
+.filters-reset { align-self: end; }
+
+/* ---------- inline edit ---------- */
+/*
+  The Issues and Remarks columns of the monitoring form. A button that becomes a
+  textarea, so a row of them reads as text rather than as a wall of inputs.
+*/
+
+.inline-edit {
+  display: block;
+  width: 100%;
+  min-height: 1.5rem;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.35rem;
+  margin: -0.15rem -0.35rem;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+.inline-edit:hover { background: var(--sunken); }
+.inline-edit[data-empty="true"] { color: var(--ink-faint); }
+
+.inline-edit-field {
+  width: 100%;
+  min-width: 8rem;
+  min-height: 3.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
+  background: var(--surface);
+  padding: 0.25rem 0.35rem;
+  font-size: 16px;
+  line-height: 1.45;
+  resize: vertical;
+}
+@media (min-width: 640px) {
+  .inline-edit-field { font-size: 13px; }
+}
+
+/* ---------- charts ---------- */
+
+.chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.chart-grid { stroke: var(--hairline); stroke-width: 1; }
+.chart-axis { fill: var(--ink-faint); font-size: 10px; }
+.chart-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+.chart-area { fill: var(--accent); opacity: 0.12; }
+.chart-cursor { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart-dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.chart-caption {
+  font-size: 12px;
+  color: var(--ink-muted);
+  min-height: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.bars { display: flex; flex-direction: column; gap: 0.5rem; }
+.bar-row { display: grid; grid-template-columns: minmax(6rem, 9rem) 1fr auto; gap: 0.625rem; align-items: center; }
+.bar-name { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--sys, var(--accent));
+}
+.bar-value { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink-muted); min-width: 3rem; text-align: right; }
+
+/* ---------- activity feed ---------- */
+
+.day-heading {
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: 5;
+  padding: 0.5rem 0.25rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  background: color-mix(in srgb, var(--canvas) 85%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.act-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.625rem 0.25rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.act-subject { font-size: 13px; font-weight: 500; }
+.act-detail { font-size: 12px; color: var(--ink-muted); margin-top: 1px; }
+.act-sys { display: none; align-items: center; gap: 0.3rem; font-size: 11px; color: var(--ink-muted); }
+@media (min-width: 640px) { .act-sys { display: inline-flex; } }
+.act-time { font-size: 11px; color: var(--ink-faint); white-space: nowrap; margin-left: auto; }
