@@ -68,15 +68,33 @@ SM.ui = SM.ui || {};
     function close() {
       if (closed) return;
       closed = true;
-      /* The element is removed on the dialog's own close event, below. */
-      if (dialog.open) dialog.close();
-      else cleanup();
+      if (dialog.open) {
+        try { dialog.close(); } catch (err) { /* already closing */ }
+      }
+      /*
+        Removed here rather than left to the dialog's own close event.
+
+        The close event is the tidier hook and it is what the spec says fires,
+        but it cannot be the only one: some engines - including the one this was
+        first tested in - clear .open without ever dispatching it, and the
+        element then stays in the document as an invisible modal that swallows
+        clicks and traps focus. Removing it ourselves is not belt-and-braces, it
+        is the belt; the listener below is the braces, for the closes the browser
+        starts on its own.
+      */
+      cleanup();
     }
+
     function cleanup() {
       if (dialog.parentNode) dialog.remove();
     }
 
-    dialog.addEventListener('close', cleanup);
+    /* Escape and the close button go through the browser, not through close(). */
+    dialog.addEventListener('close', function () { closed = true; cleanup(); });
+    dialog.addEventListener('cancel', function () {
+      /* Let the browser finish its own close first, then make sure it is gone. */
+      setTimeout(function () { closed = true; cleanup(); }, 0);
+    });
 
     /*
       A click on the backdrop lands on the <dialog> itself rather than on the
@@ -88,19 +106,26 @@ SM.ui = SM.ui || {};
       });
     }
 
-    if (o.onSubmit) {
-      form.addEventListener('submit', function (event) {
-        /* method="dialog" would close before the handler could object. */
-        event.preventDefault();
-        var data = {};
-        var fields = SM.dom.qsa('[name]', form);
-        for (var i = 0; i < fields.length; i++) {
-          var field = fields[i];
-          data[field.name] = field.type === 'checkbox' ? field.checked : field.value;
-        }
-        o.onSubmit(data, api);
-      });
-    }
+    /*
+      Every submit is intercepted, whether or not the caller wants the data.
+
+      The panel is a <form method="dialog">, so pressing Enter in any field would
+      otherwise let the browser close the dialog on its own - which skips close()
+      and, on an engine that does not fire the close event, leaves the element in
+      the document. Routing all of it through close() means there is exactly one
+      teardown path.
+    */
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (!o.onSubmit) { close(); return; }
+      var data = {};
+      var fields = SM.dom.qsa('[name]', form);
+      for (var i = 0; i < fields.length; i++) {
+        var field = fields[i];
+        data[field.name] = field.type === 'checkbox' ? field.checked : field.value;
+      }
+      o.onSubmit(data, api);
+    });
 
     dialog.showModal();
     if (o.onMount) o.onMount(form, api);
