@@ -32,7 +32,14 @@ SM.sweep = (function () {
     minutes or two hours later - and the backfill and the live sweep agree.
   */
   var SLOT_MS = 30 * 60 * 1000;
-  var MAX_EPISODE = 6;          /* slots, so up to three hours */
+  /*
+    A single episode runs 1 to 6 slots, so up to three hours. Measured downtime
+    can exceed that: a fresh episode may start while one is still running, and
+    the two chain. Over thirty days that produces a mean of about four and a half
+    slots with the occasional eight-hour outage, which is the distribution a real
+    network has and is the reason not to cap it.
+  */
+  var MAX_EPISODE = 6;
   var MEAN_EPISODE = 3;
 
   var running = false;
