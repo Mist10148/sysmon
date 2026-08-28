@@ -128,7 +128,15 @@ SM.exports = (function () {
       out.push(time);
       out.push(row.location_name);
       out.push('');
-      out.push(row.raw_output || '(no output recorded)');
+      /*
+        Split the transcript into its own lines rather than pushing it as one
+        blob. Stored raw output uses \n; this file is joined with \r\n, so
+        pushing it whole would leave a single file with mixed line endings -
+        and this format is read by things outside SysMon, which is exactly
+        where that bites.
+      */
+      var transcript = (row.raw_output || '(no output recorded)').split(/\r\n|\r|\n/);
+      for (var t = 0; t < transcript.length; t++) out.push(transcript[t]);
       out.push('');
     }
 
@@ -147,6 +155,15 @@ SM.exports = (function () {
         Math.ceil(rows.length / 28) + ' pages. Narrow the date range first.');
       return;
     }
+
+    /*
+      Clear any previous report first. afterprint is not reliable everywhere -
+      Safari in particular - so there is a fallback timer, and between the two a
+      second print started inside that window would otherwise stack two forms and
+      print both.
+    */
+    var stale = document.querySelectorAll('.print-report');
+    for (var s = 0; s < stale.length; s++) stale[s].remove();
 
     var single = systemName(state);
     var host = document.createElement('div');
@@ -200,8 +217,13 @@ SM.exports = (function () {
     SM.toast.info('Opening the print dialog',
       'Choose "Save as PDF" as the destination. Switch off headers and footers ' +
       'for a clean form.');
-    /* A frame, so the toast paints before the dialog blocks the thread. */
-    requestAnimationFrame(function () { window.print(); });
+    /*
+      A beat, so the toast paints before the print dialog blocks the thread.
+      A timer rather than requestAnimationFrame: rAF does not fire in a hidden
+      tab, which would leave the dialog waiting until the tab was looked at
+      again.
+    */
+    setTimeout(function () { window.print(); }, 60);
   }
 
   var raw = SM.dom.raw;
