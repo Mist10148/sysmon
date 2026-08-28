@@ -77,10 +77,16 @@ SM.map = (function () {
       also changes size when the rail switches layout or the drawer opens, and
       Leaflet renders a grey half-tile if it is not told.
     */
-    var observer = new ResizeObserver(function () { map.invalidateSize(); });
+    var lastRows = [];
+    var observer = new ResizeObserver(function () {
+      map.invalidateSize();
+      /* The first sizing is often the one that makes fitBounds possible. */
+      if (!fitted) fit(lastRows);
+    });
     observer.observe(container);
 
     function setRows(rows, busyIds) {
+      lastRows = rows;
       var seen = {};
       for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
@@ -121,14 +127,24 @@ SM.map = (function () {
     }
 
     var fitted = false;
+    /*
+      Fitting to the sites only works once the container has a real size. The map
+      is created inside a section that has just been written to innerHTML, so the
+      first attempt regularly measures a zero-height box and Leaflet answers with
+      a zoomed-out view of the whole world. Refusing to mark itself fitted until
+      the box is real is what makes the first paint land on Western Visayas.
+    */
     function fit(rows) {
-      if (fitted || !rows.length) return;
-      fitted = true;
+      if (fitted || !rows || !rows.length) return;
+      if (!container.clientWidth || !container.clientHeight) return;
+      map.invalidateSize();
       var points = rows.map(function (r) { return [r.lat, r.lng]; });
       try {
         map.fitBounds(window.L.latLngBounds(points).pad(0.18));
+        fitted = true;
       } catch (err) {
         map.setView(CENTER, 8);
+        fitted = true;
       }
     }
 
