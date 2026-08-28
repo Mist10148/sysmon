@@ -27,7 +27,13 @@ window.SM = window.SM || {};
       whether it works. The backfill generates a month and a half from the same
       deterministic streams the live sweep uses.
     */
-    if (loaded.freshInstall && SM.backfill) {
+    /*
+      The second half of that condition is the belt to the braces. If the stored
+      tables are ever inconsistent - one written, another not - "fresh install"
+      alone would generate a second month of history on top of the first, and
+      Analytics would quietly double-count every day of it.
+    */
+    if (loaded.freshInstall && SM.backfill && SM.store.get().checks.length === 0) {
       SM.backfill.run();
     }
 

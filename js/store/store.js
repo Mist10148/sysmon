@@ -192,6 +192,22 @@ SM.store = (function () {
     state.checks.sort(byCheckedAt);
     state.activity.sort(byActivityAt);
 
+    /*
+      Write the seed out straight away on a fresh install.
+
+      Loading from the seed does not mark anything dirty - nothing was edited -
+      so without this the seeded tables were never saved, every reload looked
+      like another fresh install, and the backfill ran again on top of the
+      history it had already generated. Persisting immediately rather than on the
+      debounce also means a reload two hundred milliseconds later is safe.
+    */
+    if (freshInstall) {
+      for (var t = 0; t < TABLES.length; t++) {
+        SM.storage.setRaw(TABLES[t], serialize(TABLES[t]));
+      }
+      SM.storage.setRaw('settings', serialize('settings'));
+    }
+
     return {
       freshInstall: freshInstall,
       warnings: loadWarnings.slice()
