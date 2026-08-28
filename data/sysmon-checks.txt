@@ -1,0 +1,14 @@
+# SysMon - check records
+# @version 1
+# @table checks
+# @exported 2026-08-28T09:14:02
+# An empty field is a dash. Booleans are yes or no. Fields are tab-separated.
+# raw_output is last because it is the long one. In it, \n is a newline and \\ a backslash.
+#
+# This is a short sample, not a full export - four records showing a site going
+# down and coming back. A real export of a month runs to a few thousand lines.
+@columns	id	run_id	location_id	checked_at	check_method	functional	packets_sent	packets_lost	loss_pct	avg_latency_ms	http_status	status	status_overridden	issues	remarks	raw_output
+1	r-20260828-080000	1	2026-08-28T08:00:02	ping	yes	4	0	0	23	-	Functional	no	-	-	Pinging 172.24.142.144 with 32 bytes of data:\nReply from 172.24.142.144: bytes=32 time=22ms TTL=124\nReply from 172.24.142.144: bytes=32 time=24ms TTL=124\nReply from 172.24.142.144: bytes=32 time=23ms TTL=124\nReply from 172.24.142.144: bytes=32 time=23ms TTL=124\n\nPing statistics for 172.24.142.144:\n    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 22ms, Maximum = 24ms, Average = 23ms
+2	r-20260828-080000	3	2026-08-28T08:00:02	ping	no	4	4	100	-	-	Down	no	Request timed out on all four packets	Called the LHIO; their switch lost power	Pinging 172.24.143.10 with 32 bytes of data:\nRequest timed out.\nRequest timed out.\nRequest timed out.\nRequest timed out.\n\nPing statistics for 172.24.143.10:\n    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)
+3	r-20260828-083000	3	2026-08-28T08:30:03	ping	yes	4	1	25	118	-	Restored	no	Intermittent loss while the switch came back up	-	Pinging 172.24.143.10 with 32 bytes of data:\nReply from 172.24.143.10: bytes=32 time=114ms TTL=122\nRequest timed out.\nReply from 172.24.143.10: bytes=32 time=121ms TTL=122\nReply from 172.24.143.10: bytes=32 time=119ms TTL=122\n\nPing statistics for 172.24.143.10:\n    Packets: Sent = 4, Received = 3, Lost = 1 (25% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 114ms, Maximum = 121ms, Average = 118ms
+4	r-20260828-083000	9	2026-08-28T08:30:03	http	yes	1	0	0	186	200	Functional	no	-	-	GET https://nclaims.example/ \n< HTTP/1.1 200 OK\n< server: nginx\n< content-type: text/html; charset=utf-8\n\ntime_total=0.186s

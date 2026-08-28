@@ -1,0 +1,12 @@
+# SysMon - system types
+# @version 1
+# @table system_types
+# @exported 2026-08-28T09:14:02
+# An empty field is a dash. Booleans are yes or no. Fields are tab-separated.
+# Reorder by editing sort_order. Ids must stay unique and locations point at them.
+@columns	id	sort_order	slug	name	description	color	icon	check_method	http_scheme	http_port	http_path	http_expect_status	active
+1	1	queueing	Queueing System	Ticket displays and counter terminals in each LHIO lobby	violet	ticket	ping	-	-	-	-	yes
+2	2	nclaims	Nclaims	Claims processing front end	blue	server	http	https	-	/	200	yes
+3	3	mcris	Mcris	Member contribution records	teal	database	http	https	-	/	200	yes
+4	4	pmais	Pmais	Accreditation and provider records	amber	shield	http	https	-	/	200	yes
+5	5	ipas	Ipas	Inpatient authorisation	rose	heart-pulse	http	https	-	/	200	yes

@@ -1,0 +1,15 @@
+# SysMon - activity feed
+# @version 1
+# @table activity
+# @exported 2026-08-28T09:14:02
+# An empty field is a dash. Booleans are yes or no. Fields are tab-separated.
+# Append-only in practice. Prune removes everything before a date.
+@columns	id	at	kind	action	severity	subject	detail	location_id	system_type_id	run_id
+1	2026-08-28T08:00:02	sweep	sweep.run	info	Checked 8 sites	7 functional, 1 down	-	-	r-20260828-080000
+2	2026-08-28T08:00:02	status	status.down	critical	BACOLOD went down	Queueing System - 100% packet loss on 172.24.143.10	3	1	r-20260828-080000
+3	2026-08-28T08:22:41	check	check.edit	info	Remarks edited on BACOLOD	Called the LHIO; their switch lost power	3	1	-
+4	2026-08-28T08:30:03	sweep	sweep.run	info	Checked 8 sites	8 functional, 0 down	-	-	r-20260828-083000
+5	2026-08-28T08:30:03	status	status.restored	success	BACOLOD is back	Queueing System - down for 30m, now 118 ms	3	1	r-20260828-083000
+6	2026-08-28T09:01:15	settings	settings.update	info	Automatic sweeps changed	Every 30 minutes	-	-	-
+7	2026-08-28T09:07:50	location	location.create	info	SARA added	Queueing System - 172.24.145.153	5	1	-
+8	2026-08-28T09:12:04	system_type	system_type.update	info	Nclaims edited	Now checked by GET https://host/ expecting 200	-	2	-

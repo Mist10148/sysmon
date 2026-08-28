@@ -1,0 +1,18 @@
+# SysMon - settings
+# @version 1
+# @table settings
+# @exported 2026-08-28T09:14:02
+# key = value. Lines beginning with # are ignored.
+#
+# This is the one file worth editing by hand. Changing seed_salt regenerates
+# every simulated result from scratch, which is a quick way to get a different
+# month out of the same eight sites.
+
+auto_sweep_enabled    = 0
+auto_sweep_minutes    = 5
+sweep_packets         = 4
+sweep_timeout_ms      = 1000
+notifications_enabled = 0
+theme                 = system
+seed_salt             = sysmon-wv-2026
+backfill_days         = 45
