@@ -1,0 +1,13 @@
+# Nothing here is built, so there is very little to ignore.
+# Editor and OS litter
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Exported data files land in Downloads, but if one is dragged in by mistake
+# it should not be committed over the samples in data/.
+/*.txt
+!/.nojekyll

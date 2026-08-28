@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SysMon — System Monitoring</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Monitoring for the LHIO systems across Western Visayas — queueing, Nclaims, Mcris, Pmais, Ipas. A status map, the monitoring form, uptime analytics and an activity log.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#faf9f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1a18" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
+
+<!--
+  Theme, before the first paint.
+
+  If this ran with the rest of the scripts at the end of the body the page would
+  paint light and then flip, which is the one thing a dark-mode user notices. So
+  it is inline, in the head, and deliberately duplicates the small amount of
+  logic that also lives in js/shell/theme.js.
+-->
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem('sysmon-theme') || 'system';
+    var dark = saved === 'dark' ||
+      (saved === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) document.documentElement.classList.add('dark');
+  } catch (e) {
+    /* Private mode can throw on localStorage. Light is a fine answer. */
+  }
+})();
+</script>
+
+<!-- Leaflet, the one third-party file in SysMon. If it fails to load the
+     Dashboard falls back to a plain pin board; see js/map/map.js. -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="vibrancy-wash app-root">
+  <div class="app-frame">
+
+    <!-- Below 1024px this is an off-canvas drawer; above it, a sticky column. -->
+    <div class="scrim" id="scrim" hidden></div>
+    <aside class="sidebar glass" id="sidebar" aria-label="Main navigation"></aside>
+
+    <div class="main">
+      <header class="topbar glass" id="topbar"></header>
+      <div class="offline-banner" id="offline-banner" hidden>
+        <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#i-wifi-off"/></svg>
+        <span>Offline — SysMon keeps working; nothing here needs the network.</span>
+      </div>
+      <div id="view" class="view" tabindex="-1"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toasts" id="toasts" role="region" aria-live="polite" aria-label="Notifications"></div>
+<div id="layers"></div>
+
+<noscript>
+  <div class="noscript">
+    <h1>SysMon needs JavaScript</h1>
+    <p>The whole application is HTML, CSS and JavaScript with no server behind it,
+       so with scripting switched off there is nothing left to show.</p>
+  </div>
+</noscript>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+
+<!--
+  The script list IS the dependency graph.
+
+  These are classic scripts, not modules, and that is a deliberate choice:
+  <script type="module"> is CORS-blocked on file://, so modules would mean
+  SysMon could only be opened through a web server. Ordered classic scripts
+  work by double-clicking index.html and work on GitHub Pages, with no build
+  step in either case. Everything hangs off one global, window.SM.
+-->
+
+<!-- core: no dependencies beyond each other, in this order -->
+<script src="js/core/dom.js"></script>
+<script src="js/core/emitter.js"></script>
+<script src="js/core/format.js"></script>
+<script src="js/core/rng.js"></script>
+<script src="js/core/storage.js"></script>
+
+<!-- data: the .txt record format and the built-in seed -->
+<script src="js/data/txt.js"></script>
+<script src="js/data/seed.js"></script>
+
+<!-- store: state, reads, writes -->
+<script src="js/store/schema.js"></script>
+<script src="js/store/store.js"></script>
+<script src="js/store/queries.js"></script>
+<script src="js/store/mutations.js"></script>
+
+<!-- domain: what SysMon actually does -->
+<script src="js/domain/status.js"></script>
+<script src="js/domain/activity-log.js"></script>
+<script src="js/domain/sweep.js"></script>
+<script src="js/domain/backfill.js"></script>
+<script src="js/domain/analytics.js"></script>
+<script src="js/domain/notify.js"></script>
+<script src="js/domain/scheduler.js"></script>
+<script src="js/domain/io/exports.js"></script>
+<script src="js/domain/io/import.js"></script>
+
+<!-- ui: string renderers first, then the components that own lifecycle -->
+<script src="js/ui/primitives.js"></script>
+<script src="js/ui/badges.js"></script>
+<script src="js/ui/table.js"></script>
+<script src="js/ui/toolbar.js"></script>
+<script src="js/ui/toast.js"></script>
+<script src="js/ui/overlay.js"></script>
+<script src="js/ui/inline-edit.js"></script>
+
+<!-- map -->
+<script src="js/map/map.js"></script>
+<script src="js/map/picker.js"></script>
+
+<!-- pages, then the router that mounts them, then the shell around them -->
+<script src="js/pages/dashboard.js"></script>
+<script src="js/pages/systems.js"></script>
+<script src="js/pages/locations.js"></script>
+<script src="js/pages/history.js"></script>
+<script src="js/pages/analytics.js"></script>
+<script src="js/pages/activity.js"></script>
+<script src="js/pages/settings.js"></script>
+<script src="js/router.js"></script>
+<script src="js/shell/theme.js"></script>
+<script src="js/shell/shell.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

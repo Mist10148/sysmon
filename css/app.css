@@ -1,0 +1,30 @@
+/*
+  SysMon stylesheet — the only <link> in index.html.
+  Order matters: tokens define the vocabulary, base sets defaults, utilities
+  provide the spacing and typography vocabulary the markup is written in,
+  components style named parts, and pages hold the handful of one-offs that
+  belong to a single screen.
+
+  Breakpoints, used consistently and nowhere else:
+    640px   dialogs stop being bottom sheets
+    768px   tables stop being card stacks; two-up grids appear
+    1024px  the sidebar appears and the mobile top bar goes away
+    1280px  the dashboard map rail floats over the map
+*/
+
+@import url("tokens.css");
+@import url("base.css");
+@import url("utilities.css");
+@import url("layout.css");
+
+@import url("components/button.css");
+@import url("components/form.css");
+@import url("components/card.css");
+@import url("components/table.css");
+@import url("components/overlay.css");
+@import url("components/badge.css");
+@import url("components/misc.css");
+
+@import url("map.css");
+@import url("pages.css");
+@import url("print.css");
