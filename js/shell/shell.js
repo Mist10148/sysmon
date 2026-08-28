@@ -1,0 +1,176 @@
+/*
+  The shell: sidebar, mobile top bar, and the drawer behaviour that joins them.
+
+  The sidebar is one element in both layouts. Below 1024px it is a fixed
+  off-canvas drawer with a scrim; at 1024px and above the same element is a
+  sticky column and the drawer machinery is inert. Rebuilding the navigation on
+  resize would be pointless work and would lose the focus ring mid-keyboard-use.
+*/
+window.SM = window.SM || {};
+
+SM.shell = (function () {
+  'use strict';
+
+  var html = SM.dom.html;
+  var raw = SM.dom.raw;
+  var icon = SM.dom.icon;
+
+  var sidebar = null;
+  var topbar = null;
+  var scrim = null;
+  var drawerOpen = false;
+
+  /* ---------- rendering ---------- */
+
+  function renderSidebar() {
+    var route = SM.router.currentRoute();
+    var activeId = route ? route.id : 'dashboard';
+
+    sidebar.innerHTML = html`
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">SM</div>
+        <div class="min-w-0">
+          <div class="brand-name">SysMon</div>
+          <div class="brand-sub">System monitoring</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        ${SM.router.ROUTES.map(function (r) {
+          return raw(html`
+            <a class="nav-item" href="${SM.router.build(r.path)}"
+               ${raw(r.id === activeId ? 'aria-current="page"' : '')}>
+              ${raw(icon(r.icon))}
+              <span>${r.label}</span>
+            </a>`);
+        })}
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="sweep-box" id="sweep-box">${raw(sweepBoxInner())}</div>
+      </div>`;
+  }
+
+  /*
+    The sidebar's footer answers "is this thing still watching?" without making
+    anyone open Settings.
+  */
+  function sweepBoxInner() {
+    var on = SM.store.settingOn('auto_sweep_enabled');
+    var mins = SM.store.settingInt('auto_sweep_minutes');
+    var last = SM.queries.lastSweepAt();
+    return html`
+      <div class="sweep-box-label">Auto sweep</div>
+      <div class="sweep-box-value">${on ? 'Every ' + SM.fmt.plural(mins, 'min') : 'Paused'}</div>
+      <div class="sweep-box-hint">${last ? 'Last run ' + SM.fmt.relative(last) : 'Never run'}</div>`;
+  }
+
+  function renderTopBar() {
+    topbar.innerHTML = html`
+      <button class="icon-button-44" type="button" data-act="open-drawer"
+              aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">
+        ${raw(icon('menu', 'icon-lg'))}
+      </button>
+      <div class="brand-mark" aria-hidden="true" style="width:28px;height:28px;font-size:11px">SM</div>
+      <span class="topbar-title">SysMon</span>
+      <div class="ml-auto flex items-center gap-1">
+        <button class="icon-button-44" type="button" data-act="cycle-theme"
+                aria-label="Change theme">${raw(themeIcon())}</button>
+      </div>`;
+  }
+
+  function themeIcon() {
+    var mode = SM.theme.get();
+    if (mode === 'light') return icon('sun', 'icon-lg');
+    if (mode === 'dark') return icon('moon', 'icon-lg');
+    return icon('monitor', 'icon-lg');
+  }
+
+  /* ---------- drawer ---------- */
+
+  function openDrawer() {
+    if (drawerOpen) return;
+    drawerOpen = true;
+    sidebar.dataset.open = 'true';
+    scrim.hidden = false;
+    document.body.dataset.scrollLocked = 'true';
+    var trigger = SM.dom.qs('[data-act="open-drawer"]', topbar);
+    if (trigger) trigger.setAttribute('aria-expanded', 'true');
+    /* Focus the first link so the keyboard lands inside the thing that opened. */
+    var first = SM.dom.qs('.nav-item', sidebar);
+    if (first) first.focus();
+  }
+
+  function closeDrawer(returnFocus) {
+    if (!drawerOpen) return;
+    drawerOpen = false;
+    sidebar.dataset.open = 'false';
+    scrim.hidden = true;
+    delete document.body.dataset.scrollLocked;
+    var trigger = SM.dom.qs('[data-act="open-drawer"]', topbar);
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'false');
+      if (returnFocus) trigger.focus();
+    }
+  }
+
+  /* ---------- wiring ---------- */
+
+  function init() {
+    sidebar = SM.dom.qs('#sidebar');
+    topbar = SM.dom.qs('#topbar');
+    scrim = SM.dom.qs('#scrim');
+
+    renderSidebar();
+    renderTopBar();
+
+    /* Navigation always closes the drawer; it is a mobile-only thing anyway. */
+    SM.dom.delegate(sidebar, 'click', '.nav-item', function () { closeDrawer(false); });
+
+    SM.dom.delegate(topbar, 'click', '[data-act="open-drawer"]', function () { openDrawer(); });
+    SM.dom.delegate(topbar, 'click', '[data-act="cycle-theme"]', function () {
+      var order = ['system', 'light', 'dark'];
+      var at = order.indexOf(SM.theme.get());
+      SM.theme.set(order[(at + 1) % order.length]);
+    });
+
+    scrim.addEventListener('click', function () { closeDrawer(true); });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && drawerOpen) {
+        event.stopPropagation();
+        closeDrawer(true);
+      }
+    });
+
+    /*
+      Crossing 1024px with the drawer open would leave the scroll lock and the
+      scrim in place over a layout that no longer has a drawer.
+    */
+    var wide = window.matchMedia('(min-width: 1024px)');
+    var onWide = function (e) { if (e.matches) closeDrawer(false); };
+    if (wide.addEventListener) wide.addEventListener('change', onWide);
+    else if (wide.addListener) wide.addListener(onWide);
+
+    SM.router.onChange(function () { renderSidebar(); });
+    SM.theme.onChange(function () { renderTopBar(); });
+
+    /* The footer box tracks sweeps and the interval setting. */
+    SM.store.subscribe(['checks', 'settings'], function () {
+      var box = SM.dom.qs('#sweep-box');
+      if (box) box.innerHTML = sweepBoxInner();
+    });
+
+    watchOnline();
+  }
+
+  function watchOnline() {
+    var banner = SM.dom.qs('#offline-banner');
+    function paint() { banner.hidden = navigator.onLine !== false; }
+    window.addEventListener('online', paint);
+    window.addEventListener('offline', paint);
+    paint();
+  }
+
+  return { init: init, closeDrawer: closeDrawer };
+})();
