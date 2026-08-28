@@ -9,7 +9,8 @@ project with no test suite and no build step.
 ## Phase 0 — scaffold
 
 - [x] `index.html` — the shell, the ordered script list, the pre-paint theme script
-- [x] `assets/icons.svg` — one sprite, every glyph reduced to stroke geometry
+- [x] the icon sprite, inline in `index.html` — external `<use>` is CORS-blocked
+      on `file://`, which would make every icon vanish when double-clicked
 - [x] `assets/favicon.svg`, `LICENSE`, `.gitignore`, `.gitattributes`, `.nojekyll`
 
 **Verify:** the page loads, the sprite resolves, nothing 404s.

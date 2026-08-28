@@ -105,7 +105,7 @@ SM.dom = (function () {
 
   function icon(name, cls) {
     return '<svg class="icon' + (cls ? ' ' + cls : '') + '" aria-hidden="true">' +
-      '<use href="assets/icons.svg#i-' + name + '"/></svg>';
+      '<use href="#i-' + name + '"/></svg>';
   }
 
   function debounce(fn, wait) {
