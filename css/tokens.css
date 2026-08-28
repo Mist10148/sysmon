@@ -1,1 +1,140 @@
-/* css/tokens.css */
+/*
+  Design tokens.
+
+  These are the same values the previous build used, carried over unchanged so
+  the two applications look like one product. Nothing outside this file should
+  contain a colour literal: if a component needs a shade that is not here, the
+  shade is missing from the system, not from the component.
+
+  Light is the default and lives on :root. Dark redefines only what changes,
+  under .dark on <html>, set before first paint by the inline script in
+  index.html and maintained by js/shell/theme.js.
+*/
+
+:root {
+  /* Warm neutrals. The canvas is not white; the surfaces sitting on it are. */
+  --canvas: #faf9f5;
+  --surface: #ffffff;
+  --sunken: #f0eee6;
+  --raised: #ffffff;
+
+  --ink: #1f1e1d;
+  --ink-muted: #6b6862;
+  --ink-faint: #918c84;
+
+  --hairline: rgb(31 30 29 / 0.09);
+  --hairline-strong: rgb(31 30 29 / 0.16);
+
+  /* Clay accent. One accent, used for the one primary action on a screen. */
+  --accent: #c15f3c;
+  --accent-hover: #a94f2f;
+  --accent-soft: #f6e6de;
+  --accent-ink: #ffffff;
+
+  /* Health. Only these four say anything about whether a system is working. */
+  --ok: #3b9e63;
+  --ok-soft: #e4f1e9;
+  --warn: #d9a13b;
+  --warn-soft: #f8eed8;
+  --warn-ink: #8a5f14;    /* amber dark enough to carry text: 4.9:1 on --warn-soft */
+  --down: #c8483c;
+  --down-soft: #f8e3e0;
+  --unknown: #8a8782;
+  --unknown-soft: #eeece7;
+
+  /* System identity. Categorical, never health - a blue system is not "ok". */
+  --sys-blue: #2a78d6;
+  --sys-orange: #eb6834;
+  --sys-teal: #1baf7a;
+  --sys-amber: #eda100;
+  --sys-rose: #e87ba4;
+  --sys-green: #008300;
+  --sys-violet: #4a3aa7;
+  --sys-slate: #8a8782;
+
+  /* Materials. Glass is a blurred translucent panel over the vibrancy wash. */
+  --glass-bg: rgb(255 255 255 / 0.68);
+  --glass-bg-strong: rgb(255 255 255 / 0.86);
+  --glass-blur: 24px;
+
+  --shadow-contact: 0 1px 2px rgb(31 30 29 / 0.06);
+  --shadow-ambient: 0 12px 32px -8px rgb(31 30 29 / 0.14);
+  --shadow-float: 0 2px 4px rgb(31 30 29 / 0.05), 0 24px 48px -12px rgb(31 30 29 / 0.22);
+
+  /* Motion. One easing curve for everything that moves. */
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --radius: 0.875rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 1.75rem;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text",
+    "Segoe UI", Inter, system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "Cascadia Mono", "Consolas", monospace;
+
+  /*
+    The height of the mobile top bar, including the notch inset. Sticky things
+    below the bar - the Activity day headings, the offline banner - offset by
+    this rather than by a number, so there is one place to change it.
+  */
+  --topbar-h: calc(3.5rem + 1px + env(safe-area-inset-top));
+
+  --sidebar-w: 16rem;
+  --rail-w: 268px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* No top bar at this width, so nothing needs to clear it. */
+    --topbar-h: 0px;
+  }
+}
+
+.dark {
+  --canvas: #1b1a18;
+  --surface: #262523;
+  --sunken: #211f1d;
+  --raised: #2e2c29;
+
+  --ink: #f5f3ee;
+  --ink-muted: #a9a49c;
+  --ink-faint: #837e76;
+
+  --hairline: rgb(245 243 238 / 0.11);
+  --hairline-strong: rgb(245 243 238 / 0.2);
+
+  --accent: #d97757;
+  --accent-hover: #e58a6d;
+  --accent-soft: #3a2620;
+  --accent-ink: #1b1a18;
+
+  --ok: #5cb87f;
+  --ok-soft: #1e3227;
+  --warn: #e0b458;
+  --warn-soft: #382c15;
+  --warn-ink: #e0b458;   /* on a dark soft fill the mid tone is already legible */
+  --down: #e0685a;
+  --down-soft: #3b211d;
+  --unknown: #8d8880;
+  --unknown-soft: #2b2926;
+
+  --sys-blue: #3987e5;
+  --sys-orange: #d95926;
+  --sys-teal: #199e70;
+  --sys-amber: #c98500;
+  --sys-rose: #d55181;
+  --sys-green: #008300;
+  --sys-violet: #9085e9;
+  --sys-slate: #8d8880;
+
+  --glass-bg: rgb(38 37 35 / 0.66);
+  --glass-bg-strong: rgb(38 37 35 / 0.88);
+
+  --shadow-contact: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-ambient: 0 12px 32px -8px rgb(0 0 0 / 0.55);
+  --shadow-float: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -12px rgb(0 0 0 / 0.6);
+}
