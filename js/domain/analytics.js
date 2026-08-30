@@ -40,7 +40,7 @@ SM.analytics = (function () {
       bump(bySite, row.location_name, up, row.system_type_color);
     }
 
-    var outages = findOutages(rows);
+    var outages = findOutages(rows, rangeEnd(opts.to));
     var recovered = outages.filter(function (o) { return !o.ongoing; });
     var mttr = recovered.length
       ? recovered.reduce(function (sum, o) { return sum + o.durationMs; }, 0) / recovered.length
@@ -59,6 +59,21 @@ SM.analytics = (function () {
       bySystem: toRanked(bySystem),
       bySite: toRanked(bySite)
     };
+  }
+
+  /*
+    The moment an outage still running at the end of the range should be measured
+    to: the end of the last day in the range, or now, whichever comes first. A
+    range that has not finished yet is measured to now; a range that ended in the
+    past is measured to when it ended.
+  */
+  function rangeEnd(to) {
+    var now = new Date().getTime();
+    if (!to) return now;
+    var last = SM.fmt.parse(to);
+    if (!last) return now;
+    last.setHours(23, 59, 59, 999);
+    return Math.min(now, last.getTime());
   }
 
   function collect(opts) {
@@ -120,8 +135,15 @@ SM.analytics = (function () {
     An outage still open at the end of the range is marked ongoing rather than
     given a made-up end, and is excluded from mean time to recovery: averaging in
     an outage that has not finished would drag the figure toward zero.
+
+    `until` is where an ongoing outage is measured to, and it matters. For a
+    range ending today that is now. For a past range it is the end of the range,
+    because a site whose last check in July failed did not stay down until
+    whenever you happen to open this page - measuring to now would report a July
+    outage as ongoing with a duration that grows every time you look at it.
   */
-  function findOutages(rows) {
+  function findOutages(rows, until) {
+    var end = until == null ? new Date().getTime() : until;
     var bySite = {};
     for (var i = 0; i < rows.length; i++) {
       var id = rows[i].location_id;
@@ -161,7 +183,7 @@ SM.analytics = (function () {
         }
       }
       if (open) {
-        open.durationMs = new Date() - SM.fmt.parse(open.started);
+        open.durationMs = Math.max(0, end - SM.fmt.parse(open.started));
         outages.push(open);
       }
     });
