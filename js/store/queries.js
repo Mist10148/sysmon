@@ -144,6 +144,7 @@ SM.queries = (function () {
       loc.avg_latency_ms = check ? check.avg_latency_ms : null;
       loc.loss_pct = check ? check.loss_pct : null;
       loc.http_status = check ? check.http_status : null;
+      loc.source = check ? check.source : null;
       return loc;
     });
   }

@@ -41,12 +41,84 @@ SM.pages.settings = (function () {
     function update() {
       elHeader.innerHTML = SM.ui.PageHeader({
         title: 'Settings',
-        desc: 'How often sites are checked, how the simulation behaves, and where ' +
-              'your data goes'
+        desc: 'Where the checks come from, how often they run, and where your ' +
+              'data goes'
       }).__html;
 
       elGrid.innerHTML =
-        sweepsCard() + optionsCard() + dataCard() + notificationsCard() + appearanceCard();
+        probeCard() + sweepsCard() + optionsCard() + dataCard() +
+        notificationsCard() + appearanceCard();
+    }
+
+    /* ---------- where the numbers come from ---------- */
+
+    /*
+      The first card on the page, because it decides what every number in the
+      application means. A dashboard that is green because nothing was measured
+      is not the same dashboard as one that is green because eight offices
+      answered, and the difference must not be something you have to know to
+      look for.
+    */
+    function probeCard() {
+      var state = SM.probe.status();
+      var live = !!(state && state.available);
+      var packets = SM.store.settingInt('sweep_packets');
+      var timeout = SM.store.settingInt('sweep_timeout_ms');
+
+      var box;
+      if (live) {
+        box = html`
+          <div class="status-box-line">
+            ${raw('<strong>Measuring for real</strong> · ' +
+                  SM.dom.esc(SM.fmt.plural(packets, 'packet')) + ' per site, ' +
+                  SM.dom.esc(String(timeout)) + 'ms timeout')}
+          </div>
+          <div class="status-box-line">
+            Probe agent ${state.agent.version} on
+            ${state.agent.host || 'this PC'} · real ICMP and HTTP
+          </div>`;
+      } else if (state && state.reason === 'https') {
+        box = html`
+          <div class="status-box-line">
+            ${raw('<strong>Simulated</strong> · this is the published copy')}
+          </div>
+          <div class="status-box-line">
+            A page served over https may not talk to an agent on this PC, so
+            SysMon does not look for one here. Run it from the folder to measure
+            for real.
+          </div>`;
+      } else {
+        box = html`
+          <div class="status-box-line">
+            ${raw('<strong>Simulated</strong> · no probe agent is answering')}
+          </div>
+          <div class="status-box-line">
+            Every check is generated from a seed rather than measured. Records,
+            outages and exports are real; the measurements in them are not.
+          </div>`;
+      }
+
+      return SM.ui.Card({
+        icon: live ? 'activity' : 'radio',
+        title: 'Where the checks come from',
+        desc: 'Whether SysMon is measuring this network or simulating it.',
+        body: raw(html`
+          <div class="setting-rows">
+            <div class="status-box">${raw(box)}</div>
+
+            ${!live && (!state || state.reason !== 'https') ? raw(html`
+              <p class="info-block">
+                A browser cannot send an ICMP echo request. Double-click
+                <strong>SysMon.bat</strong> in the SysMon folder to start the
+                probe agent, which can, then press Check again.
+              </p>`) : ''}
+
+            <div class="flex flex-wrap gap-2">
+              ${SM.ui.Button({ label: 'Check again', icon: 'refresh-cw',
+                               variant: 'secondary', act: 'recheck-agent' })}
+            </div>
+          </div>`)
+      }).__html;
     }
 
     /* ---------- automatic sweeps ---------- */
@@ -104,8 +176,8 @@ SM.pages.settings = (function () {
       return SM.ui.Card({
         icon: 'gauge',
         title: 'Sweep options',
-        desc: 'What a check looks like. These shape the simulated results and how ' +
-              'long a sweep appears to take.',
+        desc: 'What a check asks. With the probe agent running these are the ' +
+              'real ping arguments, and they decide how long a sweep takes.',
         body: raw(html`
           <div class="setting-rows">
             ${SM.ui.Field({
@@ -117,11 +189,19 @@ SM.pages.settings = (function () {
               value: timeout, min: 100, max: 20000, step: 100, act: 'set-timeout',
               hint: 'A fully unreachable site would take about ' + worst + 's'
             })}
-            <p class="info-block">
-              A browser cannot send an ICMP echo request, so results are simulated
-              from a seed rather than measured. Everything built on them — the
-              records, the outages, the exports — is real.
-            </p>
+            ${SM.probe.status() && SM.probe.status().available ? raw(html`
+              <p class="info-block">
+                The probe agent is measuring these checks for real, and these are
+                the arguments it uses. A fully unreachable site takes the whole
+                budget before it is called down, which is why the worst case
+                above is worth reading.
+              </p>`) : raw(html`
+              <p class="info-block">
+                With no probe agent these shape the simulation rather than a real
+                ping: a browser cannot send an ICMP echo request. Everything built
+                on the results — the records, the outages, the exports — is real
+                either way.
+              </p>`)}
           </div>`)
       }).__html;
     }
@@ -322,6 +402,20 @@ SM.pages.settings = (function () {
       update();
     }));
 
+    ctx.onCleanup(SM.dom.delegate(root, 'click', '[data-act="recheck-agent"]', function () {
+      var handle = SM.toast.show({ tone: 'loading', title: 'Looking for the probe agent…' });
+      SM.probe.detect({ force: true }).then(function (state) {
+        update();
+        if (state.available) {
+          handle.update({ tone: 'success', title: 'Measuring for real',
+                          desc: 'Probe agent ' + state.agent.version + ' answered.' });
+        } else {
+          handle.update({ tone: 'warning', title: 'No probe agent',
+                          desc: 'Checks will be simulated. Start SysMon.bat to measure.' });
+        }
+      });
+    }));
+
     ctx.onCleanup(SM.dom.delegate(root, 'click', '[data-act="export-data"]', function () {
       SM.exports.data();
     }));
@@ -378,6 +472,14 @@ SM.pages.settings = (function () {
     ctx.onCleanup(SM.store.subscribe(['settings', 'checks'], update, { signal: ctx.signal }));
 
     update();
+
+    /*
+      Ask once on arrival, then re-render. The first render uses whatever is
+      cached, so the card is never blank; this fills it in, and picks up an
+      agent that was started while another page was open.
+    */
+    SM.probe.detect().then(function () { if (!ctx.signal.aborted) update(); });
+
     return { onParams: update };
   }
 

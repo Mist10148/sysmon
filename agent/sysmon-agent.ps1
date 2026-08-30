@@ -440,7 +440,10 @@ function Invoke-Probe {
 # -------------------------------------------------------------- the listener --
 
 function Send-Response {
-  param($Context, [int]$Status, [string]$ContentType, [byte[]]$Body)
+  # ContentLength is only consulted when there is no body, which is how a HEAD
+  # reports the size it would have sent.
+  param($Context, [int]$Status, [string]$ContentType, [byte[]]$Body,
+        [long]$ContentLength = 0)
   $response = $Context.Response
   try {
     $response.StatusCode = $Status
@@ -455,7 +458,7 @@ function Send-Response {
       $response.ContentLength64 = $Body.Length
       $response.OutputStream.Write($Body, 0, $Body.Length)
     } else {
-      $response.ContentLength64 = 0
+      $response.ContentLength64 = $ContentLength
     }
   } catch {
     # A browser that navigated away mid-response is not an error worth a stack
@@ -639,9 +642,14 @@ try {
     $extension = [IO.Path]::GetExtension($file).ToLower()
     $type = $MIME[$extension]
     if (-not $type) { $type = 'application/octet-stream' }
-    $bytes = $null
-    if ($method -eq 'GET') { $bytes = [IO.File]::ReadAllBytes($file) }
-    Send-Response -Context $context -Status 200 -ContentType $type -Body $bytes
+    if ($method -eq 'HEAD') {
+      # A HEAD answers with the length it would have sent, not zero.
+      Send-Response -Context $context -Status 200 -ContentType $type -Body $null `
+        -ContentLength (Get-Item -LiteralPath $file).Length
+    } else {
+      Send-Response -Context $context -Status 200 -ContentType $type `
+        -Body ([IO.File]::ReadAllBytes($file))
+    }
   }
 } finally {
   try { $listener.Stop() } catch { }

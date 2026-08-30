@@ -313,8 +313,15 @@ SM.pages.history = (function () {
       var row = SM.queries.decorateCheck(check);
       SM.ui.openDialog({
         title: 'Raw output',
+        /*
+          Says which it was. This dialog is where someone comes to check a
+          number they are about to put their name to on the monitoring form,
+          and a simulated transcript is indistinguishable from a measured one
+          by design - it has to be, or the simulation would be useless.
+        */
         desc: row.location_name + ' · ' + SM.fmt.dateLabel(row.checked_at) + ' ' +
-              SM.fmt.timeLabel(row.checked_at),
+              SM.fmt.timeLabel(row.checked_at) +
+              (row.source === 'live' ? ' · measured' : ' · simulated'),
         body: raw('<pre class="raw-output">' +
           SM.dom.esc(row.raw_output || 'Nothing was recorded for this check.') + '</pre>'),
         footer: SM.ui.Button({ label: 'Close', variant: 'secondary', act: 'cancel' }),

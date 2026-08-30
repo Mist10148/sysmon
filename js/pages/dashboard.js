@@ -96,7 +96,8 @@ SM.pages.dashboard = (function () {
       elHeader.innerHTML = SM.ui.PageHeader({
         title: 'Dashboard',
         desc: lastSweep
-          ? 'Last sweep ' + SM.fmt.relative(lastSweep) + ' · every active site, every system'
+          ? 'Last sweep ' + SM.fmt.relative(lastSweep) + ' · every active site, ' +
+            'every system' + simulatedNote(all)
           : 'Nothing checked yet · press Check All Now to start',
         actions: raw(
           SM.ui.Segmented({
@@ -201,6 +202,26 @@ SM.pages.dashboard = (function () {
       selectedId = (toggle && selectedId === id) ? null : id;
       update();
       if (mapHandle) mapHandle.select(selectedId);
+    }
+
+    /*
+      Whether what is on screen was measured or invented, said out loud.
+
+      Read off the rows rather than off the agent, because the rows are what
+      is being shown: an agent started a minute ago does not make the figures
+      in front of you real, and the whole point of a status board is that it
+      cannot quietly mean something other than what it appears to mean.
+    */
+    function simulatedNote(rows) {
+      var sim = 0, checked = 0;
+      for (var i = 0; i < rows.length; i++) {
+        if (!rows[i].source) continue;
+        checked++;
+        if (rows[i].source === 'sim') sim++;
+      }
+      if (!sim) return '';
+      if (sim === checked) return ' · simulated, not measured';
+      return ' · ' + sim + ' of ' + checked + ' simulated';
     }
 
     /* ---------- the sweep ---------- */
