@@ -111,6 +111,7 @@ SM.schema = (function () {
     notifications_enabled: '0',
     theme: 'system',
     seed_salt: 'sysmon-wv-2026',
+    agent_url: '',
     backfill_days: '42'
   };
 
