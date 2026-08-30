@@ -85,10 +85,20 @@ SM.sweep = (function () {
   /* ---------- one probe ---------- */
 
   /*
-    Returns a check row without an id. `previousStatus` decides Functional vs
-    Restored and nothing else.
+    A measurement: what a check found, and nothing about the check record it
+    will become. The simulator below and the probe agent both produce exactly
+    this shape, which is what lets one builder write both kinds of row.
   */
-  function probe(location, system, at, previousStatus, options) {
+
+  /*
+    The deterministic simulated measurement.
+
+    The order the stream is consumed in is part of the format: regenerating a
+    month has to produce the same month, so the latency draw must come before
+    the transcript, and the transcript must be built here rather than by the
+    caller. Do not reorder these lines.
+  */
+  function simulate(location, system, at, options) {
     var opts = options || {};
     var packets = opts.packets || SM.store.settingInt('sweep_packets');
     var slot = slotOf(at);
@@ -128,24 +138,63 @@ SM.sweep = (function () {
     var lossPct = packetsSent ? Math.round((lost / packetsSent) * 1000) / 10 : 0;
 
     return {
-      run_id: opts.runId || '',
-      location_id: location.id,
-      checked_at: SM.fmt.iso(at),
-      check_method: method,
+      source: 'sim',
+      method: method,
       functional: functional,
       packets_sent: packetsSent,
       packets_lost: lost,
       loss_pct: lossPct,
       avg_latency_ms: functional ? latency : null,
       http_status: httpStatus,
-      status: SM.status.derive(functional, previousStatus),
-      status_overridden: false,
-      issues: functional ? '' : describeFailure(method, httpStatus, lossPct),
-      remarks: '',
+      issues: null,
       raw_output: method === 'http'
         ? httpTranscript(location, system, functional, httpStatus, latency)
         : pingTranscript(location, packetsSent, lost, latency, next)
     };
+  }
+
+  /*
+    Turns a measurement into a check row without an id. `previousStatus` decides
+    Functional vs Restored and nothing else.
+
+    This is the only place a check row is shaped, so a measured row and a
+    simulated one cannot drift apart in the columns that matter.
+  */
+  function buildRow(location, system, at, previousStatus, m, options) {
+    var opts = options || {};
+    var functional = !!m.functional;
+    var lossPct = m.loss_pct == null
+      ? (m.packets_sent ? Math.round((m.packets_lost / m.packets_sent) * 1000) / 10 : 0)
+      : m.loss_pct;
+
+    return {
+      run_id: opts.runId || '',
+      location_id: location.id,
+      checked_at: SM.fmt.iso(at),
+      check_method: m.method,
+      functional: functional,
+      packets_sent: m.packets_sent,
+      packets_lost: m.packets_lost,
+      loss_pct: lossPct,
+      avg_latency_ms: functional ? m.avg_latency_ms : null,
+      http_status: m.http_status == null ? null : m.http_status,
+      status: SM.status.derive(functional, previousStatus),
+      status_overridden: false,
+      issues: functional ? '' : (m.issues || describeFailure(m.method, m.http_status, lossPct)),
+      remarks: '',
+      raw_output: m.raw_output || ''
+    };
+  }
+
+  /*
+    The simulated probe, as one call. The backfill runs this thousands of times
+    inside one loop, so it stays synchronous and stays simulated: you cannot
+    retroactively measure last month, and pretending otherwise is the exact
+    dishonesty the source column exists to prevent.
+  */
+  function probe(location, system, at, previousStatus, options) {
+    return buildRow(location, system, at, previousStatus,
+                    simulate(location, system, at, options), options);
   }
 
   function describeFailure(method, httpStatus, lossPct) {
@@ -342,7 +391,7 @@ SM.sweep = (function () {
   function isRunning() { return running; }
 
   return {
-    run: run, probe: probe, isDown: isDown, slotOf: slotOf,
-    isRunning: isRunning, SLOT_MS: SLOT_MS
+    run: run, probe: probe, simulate: simulate, buildRow: buildRow,
+    isDown: isDown, slotOf: slotOf, isRunning: isRunning, SLOT_MS: SLOT_MS
   };
 })();
