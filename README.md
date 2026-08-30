@@ -2,14 +2,16 @@
 
 Monitoring for the LHIO systems across Western Visayas: a status map, the paper
 monitoring form filled in for you, uptime analytics, and a log of everything that
-happened. It is one HTML file, some CSS, some JavaScript, and nothing else.
+happened. It is one HTML file, some CSS, some JavaScript, and a PowerShell script
+that does the pinging.
 
 > **Where this came from.** The original was `QMon.bat`, a Windows batch file that
 > pinged eight offices one after another and appended the output to `QM.txt`. That
 > became SysMon: a React front end over a FastAPI service with a SQLite database, a
 > background scheduler and an installer. This is the same application again with all
-> of that taken away — no server, no database, no build step, no dependencies to
-> install. Open the file and it runs.
+> of that taken away — no server, no database, no build step, nothing to install —
+> but with the one thing `QMon.bat` had and a web page cannot: it really does ping
+> the offices. Double-click `SysMon.bat` and it runs.
 
 **Live:** <https://mist10148.github.io/sysmon/>
 
@@ -35,42 +37,75 @@ happened. It is one HTML file, some CSS, some JavaScript, and nothing else.
 
 ## Tech stack
 
-**All of it.** HTML, CSS and JavaScript, hand-written, no build step. One external
-file: Leaflet 1.9.4 from a CDN, pinned with subresource integrity, for the map.
+**All of it.** HTML, CSS and JavaScript, hand-written, no build step — plus one
+PowerShell script, the probe agent, which serves the folder and does the pinging.
+PowerShell 5.1 and the framework it needs ship with Windows. One external file:
+Leaflet 1.9.4 from a CDN, pinned with subresource integrity, for the map.
 
 **None of this.** No framework, no bundler, no package manager, no `node_modules`,
-no server, no database, no API. There is nothing to install and nothing to compile.
+no database, no Python, no virtualenv. There is nothing to install and nothing to
+compile.
 
 ## Quick start
 
-Download or clone the folder and **open `index.html`**. That is the whole
-procedure. It works by double-clicking the file from disk, and it works served
-from a web server; the scripts are ordinary `<script>` tags rather than ES modules
+**To monitor for real, double-click `SysMon.bat`.** A window opens, your browser
+opens on SysMon, and the checks are real ICMP and HTTP from this PC. That window is
+the probe agent — leave it open; closing it stops the real checks. Nothing is
+installed: it runs on the PowerShell that comes with Windows.
+
+**Or just open `index.html`.** Everything works, except that the check results are
+simulated rather than measured, and the interface says so on every screen that
+shows one. It works by double-clicking the file from disk and it works served from
+a web server; the scripts are ordinary `<script>` tags rather than ES modules
 precisely so that the first of those is true.
 
 The first time it opens, SysMon seeds itself with the five systems and eight sites
 the previous build shipped with, and generates six weeks of history so the History
 and Analytics pages have something real to show. Everything after that is yours.
 
-To put it on a phone or tablet, open the Pages URL above, or serve the folder from
-any web server on the network and open that address. There is nothing to configure
-either way.
+To put it on a phone or tablet, open the Pages URL above, or run `SysMon.bat --lan`
+and open the address the agent prints. See [docs/AGENT.md](docs/AGENT.md) for what
+`--lan` needs.
 
-## What is simulated, and what is not
+> **One thing that catches everybody.** Data is kept per origin, so SysMon opened
+> through `SysMon.bat` is a different store from SysMon opened by double-clicking
+> `index.html`. The first time you use the launcher it will look like a fresh
+> install, because for that origin it is. Nothing is lost — Export from one and
+> Import into the other.
 
-**Be clear about this before relying on it.** A web page cannot send an ICMP echo
-request. There is no raw socket in a browser, and no server here to ask on its
-behalf. So the check results in this build are **simulated**, and the README says
-so rather than letting a green dashboard imply something it should not.
+## What is measured, and what is not
 
-What that means in practice:
+**Be clear about this before relying on it.** Every check record says which it was,
+in a `source` column that reads `live` or `sim`, and the interface says so wherever
+it shows you a number. A green dashboard should never be able to imply something it
+should not.
 
-- **The measurements are generated, not measured.** Latency, packet loss and HTTP
-  status come from a seeded random stream, not from the network.
-- **Everything built on them is real.** The records are real records, the status
-  derivation is the same code the previous build used, the outages on the Analytics
-  page are computed from the stored rows, and an export is an export of what
-  actually happened in this application.
+**Measured, when the probe agent is running.** Real ICMP and real HTTP from the PC
+the agent is on. The packets-per-site and timeout on the Settings page are the
+actual ping arguments, the transcript in the raw output dialog is the reply that
+came back, and a site that shows 100% loss is a site that did not answer.
+
+**Simulated, when it is not.** A web page cannot send an ICMP echo request — there
+is no raw socket in a browser — so with no agent the answers come from a seeded
+stream instead of the network. This is what the published copy above does, and what
+double-clicking `index.html` does.
+
+Three things stay simulated even with the agent running, and they are the ones
+worth knowing about:
+
+- **The six weeks of backfilled history** on a fresh install. You cannot
+  retroactively measure last month.
+- **Any site the agent did not answer for**, per row. An agent that stops answering
+  half way through a sweep leaves the rest of that sweep simulated rather than
+  losing it — and a partly simulated sweep says so in the toast, the activity log
+  and the rows themselves. An outage and a helper that went away are different
+  facts.
+- **Everything on the published copy.** A page served over `https` may not fetch
+  `http://localhost`, so it does not try.
+
+The simulation itself is built to be honest in two ways, and both still matter
+because it is what History is full of:
+
 - **It is deterministic.** Every number comes from a stream seeded by the site's
   address and the half-hour slot it falls in, so regenerating a month gives the same
   month. A report that changed its own figures on reload would be worse than
@@ -81,8 +116,13 @@ What that means in practice:
   meaningless and the uptime chart a band of static. Here an outage starts, persists
   across consecutive half-hour slots, and ends — so it has a length worth measuring.
 
-If you need real reachability checks, the previous build is the one that does them,
-because it has a Python process that can.
+**Everything built on either kind is real.** The records are real records, the
+status derivation is the same code the previous build used, the outages on the
+Analytics page are computed from the stored rows, and an export is an export of what
+actually happened in this application.
+
+The agent, its protocol and its limits are written up in
+[docs/AGENT.md](docs/AGENT.md).
 
 ## Finding things in a long list
 
@@ -170,7 +210,10 @@ itself. Export before you prune.
 
 **Storage is per browser, per device, and per origin.** Opening the same folder
 from a different browser, or the Pages URL after using a local copy, is a different
-store with its own data. Export and Import are how data moves between them.
+store with its own data. **So is opening it through `SysMon.bat`**, which serves the
+folder from `http://localhost:8765` rather than `file://` — the first launch will
+look like a fresh install because for that origin it is. Export and Import are how
+data moves between them.
 
 ## The pages
 
@@ -182,7 +225,7 @@ store with its own data. Export and Import are how data moves between them.
 | **History** | The monitoring form. Filter it, edit the two prose columns, export it. |
 | **Analytics** | Uptime, outages, mean time to recovery and latency over a date range. |
 | **Activity** | Everything that happened, by day. |
-| **Settings** | Sweep schedule and options, your data, notifications, appearance. |
+| **Settings** | Where the checks come from, the sweep schedule and options, your data, notifications, appearance. |
 
 ## What is different from the previous build
 
@@ -194,11 +237,12 @@ genuinely cannot do what a server did, and what happens instead:
 | Accounts, sign-in, password reset | There is nobody to authenticate against and nowhere to keep a session. | Nothing. The application never needed an account to do its job; accounts existed to address email. |
 | Email alerts and SMTP settings | A browser cannot speak SMTP, and there is no server to ask. | Desktop notifications, which reach whoever is at this machine — and, honestly, nobody who has gone home. |
 | The TXT backup folder | A browser cannot write to a folder on its own schedule. | Export, which writes the same data when asked. The `QM.txt` block format is still one of the export options. |
-| Real ping and HTTP probes | No raw sockets; CORS makes cross-origin fetches unusable as a health check. | Deterministic simulated sweeps. See above. |
+| Real ping and HTTP probes *(back)* | A browser has no raw socket, so the page still cannot do it. | The probe agent does, in one PowerShell script rather than a venv and a pip install. Without it, deterministic simulated sweeps. See above. |
 | `.xlsx` export | It needed a Python library, and no static page can honestly write a workbook. | CSV, which Excel opens directly. Not a file named `.xls` that is really HTML. |
-| The background scheduler | Nothing runs when the tab is closed. | A timer in the tab. Automatic sweeps run while SysMon is open, including in the background, and the Settings card says exactly that. |
+| The background scheduler | Nothing runs when the tab is closed. The agent answers probes; it does not hold a schedule. | A timer in the tab. Automatic sweeps run while SysMon is open, including in the background, and the Settings card says exactly that. |
 | PDF generation | It needed a PDF library. | A printable version of the form and the browser's own print dialog, where "Save as PDF" is a destination. |
-| The installer and launcher | Nothing to install. | Open `index.html`. |
+| The installer | Nothing to install. | Nothing. `SysMon.bat` starts the agent from the PowerShell already on the machine — no venv, no `pip install`, no `npm run build`, and no five minutes of installers before the first ping. |
+| Accounts and email as the reason for a server | — | The agent is not a server in that sense: no state, no database, nothing written to disk. |
 
 ## Browser support
 
@@ -239,11 +283,31 @@ footer, which a page cannot control. Switch them off in the print dialog.
 **I get different data on my phone than on my PC.** Storage is per browser and per
 device. Export from one and Import into the other.
 
+**Settings says the checks are simulated, but I started `SysMon.bat`.** Press
+**Check again** on the Settings page. If it still says simulated, check that the
+port in the agent's window matches the address the page is open on. And note that
+opening SysMon through the agent is a different origin from opening `index.html`,
+so it has its own data.
+
+**Every site went down the moment I started the agent.** Then the agent is working
+and this PC cannot reach those addresses. The eight seeded sites are private LHIO
+addresses; from anywhere else they are unreachable, and a monitor that said
+otherwise would be the broken one. Point a site at `127.0.0.1` to see the
+difference.
+
+**A site is down in SysMon but fine in my browser.** Check which method its system
+uses. A `ping` only proves the box is powered on, and plenty of firewalls drop ICMP
+while serving HTTP perfectly happily — which is what the `http` method is for.
+
+More in [docs/AGENT.md](docs/AGENT.md).
+
 ## Documentation
 
 - [docs/PRD.md](docs/PRD.md) — what this is for, what it must do, and the record of
   what changed in the rewrite and why.
 - [docs/DATA-FORMAT.md](docs/DATA-FORMAT.md) — the `.txt` format, column by column.
+- [docs/AGENT.md](docs/AGENT.md) — the probe agent: running it, its protocol, what
+  it measures and what it refuses to do.
 - [docs/PHASE_TASKS.md](docs/PHASE_TASKS.md) — how it was built, in order.
 
 ## Licence

@@ -1,14 +1,15 @@
 # SysMon — product requirements
 
 **Project:** SysMon (static build)
-**Version:** 3.0
-**Date:** August 29, 2026
+**Version:** 3.1
+**Date:** August 30, 2026
 **Status:** Implemented
 
 > **On this document.** Sections 1 to 9 describe the product, and are carried
 > forward from the previous build's requirements because the product has not
 > changed. Section 10 is the record of the rewrite: what was removed, what replaced
-> it, and which decisions are worth being able to look up later. Requirement
+> it, and which decisions are worth being able to look up later — including 3.1,
+> which gave the real checks back without giving the dependencies back. Requirement
 > numbers are not reused; where the rewrite withdrew one, it is marked in place
 > rather than deleted, so the record stays continuous.
 
@@ -112,7 +113,7 @@ the steady state.
 
 | | |
 | --- | --- |
-| **NFR-1** | No installation. Opening the application must be the whole procedure. |
+| **NFR-1** | No installation. Opening the application must be the whole procedure, and starting the probe agent must need nothing that is not already on a Windows PC. |
 | **NFR-2** | Usable on a phone: touch targets, no horizontal scrolling of the page, no trapped scroll. |
 | **NFR-3** | Light and dark, following the operating system, with no flash of the wrong theme. |
 | **NFR-4** | Keyboard-navigable throughout; colour never the only carrier of meaning. |
@@ -127,6 +128,11 @@ Ordered classic `<script>` tags rather than ES modules, so the application can b
 opened from the filesystem. One external file: Leaflet 1.9.4 from a CDN with
 subresource integrity, for the map. State in browser storage, serialised as
 tab-separated text.
+
+Real checks come from the probe agent: one PowerShell script using
+`System.Net.NetworkInformation.Ping` and `HttpClient`, serving the folder and
+answering two endpoints on loopback. It is optional, holds no state and writes no
+files. See [AGENT.md](AGENT.md).
 
 ## 7. Data model
 
@@ -154,6 +160,7 @@ only place a colour literal appears.
 ---
 
 # 10. Version 3.0 — the same product with the server taken away
+#     Version 3.1 — and the pinging put back, for one file
 
 ## Why
 
@@ -167,6 +174,17 @@ The question this version answers: how much of SysMon survives if there is no se
 at all? The answer turned out to be all of the product and none of the network
 access — which is a clean split, and worth having made explicit.
 
+**Then the network access came back, and it cost one file.** Version 3.1 adds a
+probe agent: one PowerShell script, started by `SysMon.bat`, that serves the folder
+and answers probes with real ICMP and HTTP. Everything in the list above stays
+gone — no Python, no Node, no virtualenv, no build step, no database, no background
+process. What that split turned out to prove is not that a monitor cannot ping
+without a server, but that the only part which genuinely needed native code was the
+socket, and a socket is about forty lines of the language already on the machine.
+
+The static build is not superseded by this. With no agent it is exactly what it was,
+and says so per row.
+
 ## What changed
 
 | | | |
@@ -175,6 +193,10 @@ access — which is a clean split, and worth having made explicit.
 | **R29** | Data is kept in browser storage and moves as `.txt` files. | Done |
 | **R30** | The application opens from the filesystem by double-clicking `index.html`, and from a web server unchanged. | Done |
 | **R31** | Check results are simulated, deterministically, and the interface says so. | Done |
+| **R39** | A probe agent, started by a double-clicked launcher and needing nothing installed, performs real ICMP and HTTP checks. | Done |
+| **R40** | Every check record says whether it was measured or simulated, and the interface says so wherever it shows a measurement. | Done |
+| **R41** | With no agent, or over `https`, the application behaves exactly as it did before and reports simulated results without error. | Done |
+| **R42** | A sweep that is only partly measured writes the measured rows as measured and simulates the rest, rather than failing or inventing failures. | Done |
 | **R32** | Accounts, sign-in and password reset are removed. | Done |
 | **R33** | SMTP settings and outage email are removed; desktop notifications replace them. | Done |
 | **R34** | The TXT backup folder is removed; Export replaces it. | Done |
@@ -200,6 +222,35 @@ alternative to simulating was to remove monitoring entirely, or to fetch HTTP
 targets and call a CORS-opaque response "up", which would have been a green
 dashboard that means nothing. Simulation is stated in the README, on the Settings
 page beside the options that shape it, and in this document.
+
+**Measured where possible, and said out loud per row.** The probe agent (R39) does
+not make the previous paragraph obsolete; it makes it conditional, which is worse
+unless the condition is visible. So provenance is a stored column rather than a
+setting or a mode: `source` is `live` or `sim` on every check record, written at the
+moment the row is built and never inferred afterwards. That is what allows one
+sweep to be partly measured, an export to be audited a month later, and a green
+dashboard to state which kind of green it is.
+
+The alternative — a global "live mode" flag — would have been a lie the first time
+an agent stopped answering mid-sweep, because the rows already written would have
+claimed a provenance the later ones did not have.
+
+**A missing measurement is not a failed check.** Where the agent does not answer for
+a site, that site is simulated and marked simulated. It is never written as Down.
+An outage and a helper that went away are different facts, and a monitor that
+conflates them manufactures incidents — which is worse than one that admits it did
+not look.
+
+**PowerShell, not Python.** The agent needs a raw socket and an HTTP client, both of
+which are in the framework that ships with Windows. Choosing Python would have
+reintroduced precisely the dependency this rewrite existed to remove, and the
+previous build's own launcher is the argument: it grew code to install Python on the
+operator's behalf, and the button for it does not work.
+
+**Loopback by default.** The agent will ping any address it is asked to, so serving
+it to a network is a decision rather than a default. `--lan` opts in, and because
+Windows refuses a non-loopback binding to an ordinary user, the agent prints the one
+command that grants it instead of the words "Access is denied".
 
 **Deterministic, and outages as episodes.** Results are seeded by
 `(salt, address, half-hour slot)`, so regenerating a month produces that month
@@ -251,6 +302,13 @@ timeout say a real sweep would have taken.
 require a served origin — breaking NFR-1 — while adding a cache-invalidation story
 to a project whose main virtue is that it has none. The Settings card is honest
 about the timer's limits instead.
+
+**A schedule inside the probe agent.** It is the obvious next thing to ask for, and
+it is the line this version does not cross. An agent that sweeps on its own needs
+somewhere to put the results, which means a database or a file format it writes
+alone, which means two writers for one dataset and a merge nobody asked for. The
+agent answers questions; the browser owns the records. Anything that changes that
+is the previous build again.
 
 **The File System Access API for real `.txt` files on disk.** Chrome and Edge only,
 with a permission prompt every session. Export and Import cover the same need
