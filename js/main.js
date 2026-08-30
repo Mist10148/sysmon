@@ -24,7 +24,7 @@ window.SM = window.SM || {};
     /*
       A fresh install has systems and sites but no history, and a monitoring
       dashboard with an empty History page tells an operator nothing about
-      whether it works. The backfill generates a month and a half from the same
+      whether it works. The backfill generates six weeks from the same
       deterministic streams the live sweep uses.
     */
     /*

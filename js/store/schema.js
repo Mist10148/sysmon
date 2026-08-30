@@ -108,7 +108,7 @@ SM.schema = (function () {
     notifications_enabled: '0',
     theme: 'system',
     seed_salt: 'sysmon-wv-2026',
-    backfill_days: '45'
+    backfill_days: '42'
   };
 
   /* Numeric settings, and the range each will accept. */

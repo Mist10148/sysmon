@@ -181,7 +181,7 @@ most likely to be edited by hand.
 | `notifications_enabled` | `0` | Desktop notifications. Also requires browser permission. |
 | `theme` | `system` | `light`, `dark` or `system`. |
 | `seed_salt` | `sysmon-wv-2026` | Seeds every simulated result. Change it for a different month. |
-| `backfill_days` | `45` | How much history a fresh install generates. `0` for none. |
+| `backfill_days` | `42` | How much history a fresh install generates, in days ending today. `0` for none. |
 
 Values out of range are clamped to the nearest bound on read rather than rejected.
 Unknown keys are preserved and written back, so a newer file round-trips through an

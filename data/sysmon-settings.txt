@@ -15,4 +15,4 @@ sweep_timeout_ms      = 1000
 notifications_enabled = 0
 theme                 = system
 seed_salt             = sysmon-wv-2026
-backfill_days         = 45
+backfill_days         = 42

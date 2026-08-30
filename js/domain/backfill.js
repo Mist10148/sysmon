@@ -3,7 +3,7 @@
 
   A monitoring dashboard whose History page is empty tells an operator nothing
   about whether it works, and an Analytics page with no range to draw is a
-  screenful of dashes. So on a fresh install SysMon generates a month and a half
+  screenful of dashes. So on a fresh install SysMon generates six weeks
   of history before the first paint.
 
   This is not fake data bolted on beside the real thing: it runs the same probe
@@ -45,7 +45,8 @@ SM.backfill = (function () {
     var now = new Date();
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    for (var d = days; d >= 0; d--) {
+    /* days - 1 down to 0: `days` days ending today, not days + 1. */
+    for (var d = days - 1; d >= 0; d--) {
       var day = new Date(today.getFullYear(), today.getMonth(), today.getDate() - d);
 
       for (var t = 0; t < TIMES.length; t++) {
