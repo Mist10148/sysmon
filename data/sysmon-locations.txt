@@ -4,6 +4,8 @@
 # @exported 2026-08-28T09:14:02
 # An empty field is a dash. Booleans are yes or no. Fields are tab-separated.
 # One row per site per system. system_type_id must match a row in the system types file.
+# BACOLOD appears twice on purpose: once on the queueing system, once on Nclaims.
+# They fail independently, so they are two rows.
 @columns	id	sort_order	system_type_id	name	ip	lat	lng	region	active
 1	1	1	ANTIQUE	172.24.142.144	10.7402	121.9391	Region VI	yes
 2	2	1	CAPIZ	172.24.143.168	11.5853	122.7511	Region VI	yes
@@ -13,3 +15,4 @@
 6	6	1	PASSI	172.24.144.38	11.1078	122.6417	Region VI	yes
 7	7	1	AKLAN	172.24.142.42	11.7086	122.3661	Region VI	yes
 8	8	1	GUIMARAS	172.24.210.183	10.5929	122.5936	Region VI	yes
+9	9	2	BACOLOD	172.24.143.10	10.6765	122.9509	Region VI	yes
