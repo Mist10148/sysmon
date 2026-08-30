@@ -182,6 +182,9 @@ SM.sweep = (function () {
       status_overridden: false,
       issues: functional ? '' : (m.issues || describeFailure(m.method, m.http_status, lossPct)),
       remarks: '',
+      /* Measured or simulated. Never inferred later: a real outage and an
+         agent that stopped answering must not be indistinguishable. */
+      source: m.source === 'live' ? 'live' : 'sim',
       raw_output: m.raw_output || ''
     };
   }

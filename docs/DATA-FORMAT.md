@@ -150,6 +150,7 @@ One row per check. This is the biggest file by a wide margin.
 | `status_overridden` | bool | `yes` if a person changed the status by hand. |
 | `issues` | text | Operator text, up to 2000 characters. |
 | `remarks` | text | Operator text, up to 2000 characters. |
+| `source` | text | `live` if a probe agent measured this check, `sim` if it was simulated. |
 | `raw_output` | text | The full transcript. Last on purpose, being the long one. |
 
 ### `sysmon-activity.txt`
@@ -219,6 +220,12 @@ monthly report needs — has to be inferred.
 
 `status_overridden` marks a row a person changed. The measurements are left alone,
 so the row can be seen to disagree with itself, which is the honest outcome.
+
+`source` says where the numbers came from: `live` when the probe agent measured the
+check, `sim` when SysMon simulated it. It is recorded per row rather than per file
+because one sweep can contain both — an agent that stops answering part-way through
+leaves the rest of that sweep simulated. A file written before the column existed
+reads as `sim`, which is what those rows were.
 
 ## 7. Import behaviour
 

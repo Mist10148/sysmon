@@ -57,7 +57,9 @@ SM.schema = (function () {
     checks: {
       file: 'sysmon-checks.txt',
       title: 'check records',
-      note: 'raw_output is last because it is the long one. In it, \\n is a newline and \\\\ a backslash.',
+      note: 'source is live when a probe agent measured the check and sim ' +
+            'when it was simulated. raw_output is last because it is the ' +
+            'long one. In it, \\n is a newline and \\\\ a backslash.',
       columns: [
         ['id', 'int', 0],
         ['run_id', 'text', ''],
@@ -74,6 +76,7 @@ SM.schema = (function () {
         ['status_overridden', 'bool', false],
         ['issues', 'text', ''],
         ['remarks', 'text', ''],
+        ['source', 'text', 'sim'],
         ['raw_output', 'text', '']
       ]
     },
