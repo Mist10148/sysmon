@@ -1,12 +1,22 @@
 /*
   The sweep engine.
 
-  Be clear about what this is: a browser cannot send an ICMP echo request and
-  cannot open a raw socket, so nothing here touches the network. The results are
-  simulated. Everything downstream of them is real - the records are real
-  records, the status derivation is the same code the previous build used, the
-  outages in Analytics are computed from the stored rows, and an export is an
-  export of what actually happened in this application.
+  A sweep asks every active site whether it is answering, and writes one check
+  row per site. Where those answers come from depends on whether the probe
+  agent is running.
+
+  With the agent, they are measured: real ICMP and real HTTP from the PC the
+  agent is on, and the row says source=live. Without it - a page opened
+  straight from the file system, or the published copy on the web - a browser
+  can neither send an ICMP echo request nor open a raw socket, so the answers
+  are simulated and the row says source=sim. One sweep can contain both, and
+  an agent that stops answering half way through leaves the rest of that sweep
+  simulated rather than losing it.
+
+  Everything downstream is real either way - the records are real records, the
+  status derivation is the same code the previous build used, the outages in
+  Analytics are computed from the stored rows, and an export is an export of
+  what actually happened in this application.
 
   The simulation is built to be honest in two ways.
 
@@ -276,78 +286,164 @@ SM.sweep = (function () {
   /* ---------- a whole sweep ---------- */
 
   /*
-    options: { locationIds, at, quiet }
-    Everything is written in one transaction, so forty sites cost one render.
+    Who to check, and under what run id. Wholly synchronous, so the caller can
+    know there is nothing to do without having waited for anything.
+  */
+  function planSweep(opts) {
+    var at = opts.at || new Date();
+    var systems = {};
+    var all = SM.store.get().system_types;
+    for (var s = 0; s < all.length; s++) systems[all[s].id] = all[s];
+
+    var targets = [];
+    var locations = SM.store.get().locations;
+    for (var i = 0; i < locations.length; i++) {
+      var loc = locations[i];
+      if (opts.locationIds) {
+        if (opts.locationIds.indexOf(loc.id) === -1) continue;
+      } else {
+        if (!loc.active) continue;
+        var system = systems[loc.system_type_id];
+        if (!system || !system.active) continue;
+      }
+      targets.push(loc);
+    }
+    return { at: at, runId: SM.ids.runId(at), targets: targets, systems: systems };
+  }
+
+  /*
+    Ask the probe agent for whatever it can measure. Resolves with a map of
+    location id to measurement, empty if there is no agent - never rejects, so
+    a sweep is never lost to the transport.
+  */
+  function measure(plan, opts) {
+    if (opts.live === false || !SM.probe) {
+      return Promise.resolve({ available: false, agent: null, measurements: {},
+                               degraded: false, errors: [] });
+    }
+    var wire = [];
+    for (var i = 0; i < plan.targets.length; i++) {
+      var target = plan.targets[i];
+      wire.push(SM.probe.targetFor(target, plan.systems[target.system_type_id]));
+    }
+    return SM.probe.measureAll(wire, { runId: plan.runId });
+  }
+
+  /*
+    Write the sweep. Synchronous from here to the end, which is the point: the
+    whole thing is still one SM.store.tx, so forty sites cost one render.
+
+    The world is re-read rather than carried across the await. Seconds passed
+    while the agent was measuring, and in that time a scheduled sweep could
+    have landed, an import could have replaced everything, or a site could have
+    been deleted on the Locations page. Previous status matters most: deriving
+    Restored from a stale snapshot would write a status that was never true.
+  */
+  function commit(plan, measured, opts, elapsedMs) {
+    var latest = SM.queries.latestByLocation();
+    var locations = SM.store.get().locations;
+    var byId = {};
+    for (var l = 0; l < locations.length; l++) byId[locations[l].id] = locations[l];
+    var systems = {};
+    var all = SM.store.get().system_types;
+    for (var s = 0; s < all.length; s++) systems[all[s].id] = all[s];
+
+    var checks = [];
+    var transitions = [];
+    var functional = 0, down = 0, live = 0, sim = 0;
+
+    for (var t = 0; t < plan.targets.length; t++) {
+      var target = byId[plan.targets[t].id];
+      if (!target) continue;                 /* deleted while we were measuring */
+      var sys = systems[target.system_type_id];
+      var previous = latest[target.id] ? latest[target.id].status : null;
+
+      var m = measured.measurements[target.id];
+      if (m) { live++; } else { m = simulate(target, sys, plan.at, { runId: plan.runId }); sim++; }
+
+      var check = buildRow(target, sys, plan.at, previous, m, { runId: plan.runId });
+      checks.push(check);
+      if (check.functional) functional++; else down++;
+
+      if (SM.status.isTransition(previous, check.status)) {
+        transitions.push(buildTransition(target, sys, check, previous, latest, plan.runId));
+      }
+    }
+
+    var result = { runId: plan.runId, at: SM.fmt.iso(plan.at), targets: checks.length,
+                   functional: functional, down: down, live: live, sim: sim,
+                   elapsedMs: elapsedMs, agent: measured.agent,
+                   degraded: !!measured.degraded,
+                   checks: checks, transitions: transitions };
+
+    if (!checks.length) return result;
+
+    SM.store.tx('sweep', function () {
+      SM.mutate.addChecks(checks);
+      var entries = transitions.slice();
+      if (!opts.quiet) {
+        entries.unshift({
+          at: SM.fmt.iso(plan.at), kind: 'sweep', action: 'sweep.run', severity: 'info',
+          subject: 'Checked ' + SM.fmt.plural(checks.length, 'site'),
+          detail: functional + ' functional, ' + down + ' down' +
+                  (sim ? (live ? ' · ' + sim + ' simulated' : ' · simulated') : ''),
+          run_id: plan.runId
+        });
+      }
+      SM.activityLog.writeMany(entries);
+    });
+
+    if (SM.notify) SM.notify.announce(transitions);
+    return result;
+  }
+
+  /*
+    options: { locationIds, at, quiet, live }
+
+    Always returns a Promise. Resolves with the result, or with null when a
+    sweep was already running - the same contract the synchronous version had,
+    so `if (!result || !result.checks.length)` still reads correctly. Rejects
+    only where the old one would have thrown.
+
+    Every row carries whether it was measured or simulated, and one sweep can
+    contain both: an agent that stops answering part way through leaves the
+    rest of the sweep simulated rather than losing it.
   */
   function run(options) {
     var opts = options || {};
-    if (running) return null;
-    running = true;
+    if (running) return Promise.resolve(null);
 
+    var plan;
     try {
-      var at = opts.at || new Date();
-      var runId = SM.ids.runId(at);
-      var latest = SM.queries.latestByLocation();
-      var systems = {};
-      var all = SM.store.get().system_types;
-      for (var s = 0; s < all.length; s++) systems[all[s].id] = all[s];
-
-      var targets = [];
-      var locations = SM.store.get().locations;
-      for (var i = 0; i < locations.length; i++) {
-        var loc = locations[i];
-        if (opts.locationIds) {
-          if (opts.locationIds.indexOf(loc.id) === -1) continue;
-        } else {
-          if (!loc.active) continue;
-          var system = systems[loc.system_type_id];
-          if (!system || !system.active) continue;
-        }
-        targets.push(loc);
-      }
-
-      var checks = [];
-      var transitions = [];
-      var functional = 0, down = 0;
-
-      for (var t = 0; t < targets.length; t++) {
-        var target = targets[t];
-        var sys = systems[target.system_type_id];
-        var previous = latest[target.id] ? latest[target.id].status : null;
-        var check = probe(target, sys, at, previous, { runId: runId });
-        checks.push(check);
-        if (check.functional) functional++; else down++;
-
-        if (SM.status.isTransition(previous, check.status)) {
-          transitions.push(buildTransition(target, sys, check, previous, latest, runId));
-        }
-      }
-
-      var result = { runId: runId, at: SM.fmt.iso(at), targets: targets.length,
-                     functional: functional, down: down,
-                     checks: checks, transitions: transitions };
-
-      if (!checks.length) { running = false; return result; }
-
-      SM.store.tx('sweep', function () {
-        SM.mutate.addChecks(checks);
-        var entries = transitions.slice();
-        if (!opts.quiet) {
-          entries.unshift({
-            at: SM.fmt.iso(at), kind: 'sweep', action: 'sweep.run', severity: 'info',
-            subject: 'Checked ' + SM.fmt.plural(targets.length, 'site'),
-            detail: functional + ' functional, ' + down + ' down',
-            run_id: runId
-          });
-        }
-        SM.activityLog.writeMany(entries);
-      });
-
-      if (SM.notify) SM.notify.announce(transitions);
-      return result;
-    } finally {
-      running = false;
+      plan = planSweep(opts);
+    } catch (err) {
+      return Promise.reject(err);
     }
+
+    if (!plan.targets.length) {
+      return Promise.resolve({ runId: plan.runId, at: SM.fmt.iso(plan.at), targets: 0,
+                               functional: 0, down: 0, live: 0, sim: 0, elapsedMs: 0,
+                               agent: null, degraded: false,
+                               checks: [], transitions: [] });
+    }
+
+    /*
+      Held across the wait, not just across the synchronous part. A five-minute
+      timer firing while a slow sweep is still measuring has to be a no-op, or
+      two sweeps write the same instant twice.
+    */
+    running = true;
+    var startedAt = new Date().getTime();
+
+    return measure(plan, opts).then(function (measured) {
+      return commit(plan, measured, opts, new Date().getTime() - startedAt);
+    }).then(function (result) {
+      running = false;
+      return result;
+    }, function (err) {
+      running = false;
+      throw err;
+    });
   }
 
   /*
@@ -391,10 +487,23 @@ SM.sweep = (function () {
     return start;
   }
 
+  /*
+    A phrase for a toast saying where a sweep's numbers came from, or '' when
+    every one of them was measured and there is nothing to disclaim. Lives here
+    because the result shape is this module's, and because two pages showing it
+    differently would be two chances to say it wrongly.
+  */
+  function sourceNote(result) {
+    if (!result || !result.sim) return '';
+    if (!result.live) return ' · simulated, no probe agent';
+    return ' · ' + result.sim + ' of ' + result.targets + ' simulated';
+  }
+
   function isRunning() { return running; }
 
   return {
     run: run, probe: probe, simulate: simulate, buildRow: buildRow,
-    isDown: isDown, slotOf: slotOf, isRunning: isRunning, SLOT_MS: SLOT_MS
+    isDown: isDown, slotOf: slotOf, isRunning: isRunning, SLOT_MS: SLOT_MS,
+    sourceNote: sourceNote
   };
 })();

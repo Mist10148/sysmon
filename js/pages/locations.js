@@ -383,13 +383,33 @@ SM.pages.locations = (function () {
     }));
 
     ctx.onCleanup(SM.dom.delegate(root, 'click', '[data-act="sweep-all"]', function () {
-      var result = SM.sweep.run({});
-      if (!result || !result.checks.length) {
-        SM.toast.warning('Nothing to check', 'Every site or system is switched off.');
+      if (SM.sweep.isRunning()) {
+        SM.toast.info('A sweep is already running', 'Give it a moment.');
         return;
       }
-      SM.toast.success('Checked ' + SM.fmt.plural(result.targets, 'site'),
-        result.functional + ' functional · ' + result.down + ' down');
+      /*
+        A loading toast that is updated in place, rather than a result toast
+        afterwards. With the probe agent answering, a sweep takes as long as
+        the pings take, and a button that looks inert for four seconds reads as
+        a button that did nothing.
+      */
+      var handle = SM.toast.show({ tone: 'loading', title: 'Checking every site…' });
+      SM.sweep.run({}).then(function (result) {
+        if (!result || !result.checks.length) {
+          handle.update({ tone: 'warning', title: 'Nothing to check',
+                          desc: 'Every site or system is switched off.' });
+          return;
+        }
+        handle.update({
+          tone: result.down ? 'warning' : 'success',
+          title: 'Checked ' + SM.fmt.plural(result.targets, 'site'),
+          desc: result.functional + ' functional · ' + result.down + ' down' +
+                SM.sweep.sourceNote(result)
+        });
+      }, function (err) {
+        handle.update({ tone: 'error', title: 'The sweep failed',
+                        desc: String(err && err.message || err) });
+      });
     }));
 
     ctx.onCleanup(SM.dom.delegate(root, 'click', '[data-act="row-menu"]', function (e, node) {
@@ -400,16 +420,30 @@ SM.pages.locations = (function () {
       SM.ui.showMenu(node, [
         { label: 'Edit', icon: 'pencil', onSelect: function () { openEditor(location); } },
         { label: 'Check this site', icon: 'refresh-cw', onSelect: function () {
-            var result = SM.sweep.run({ locationIds: [id] });
-            var check = result && result.checks[0];
-            if (!check) { SM.toast.warning('Nothing was checked'); return; }
-            SM.toast.show({
-              tone: check.functional ? 'success' : 'error',
-              title: location.name + ' is ' + check.status.toLowerCase(),
-              desc: check.functional
-                ? SM.fmt.latency(check.avg_latency_ms) + ' · ' +
-                  SM.fmt.percent(check.loss_pct, 0) + ' loss'
-                : check.issues
+            if (SM.sweep.isRunning()) {
+              SM.toast.info('A sweep is already running', 'Give it a moment.');
+              return;
+            }
+            var handle = SM.toast.show({ tone: 'loading',
+                                         title: 'Checking ' + location.name + '…' });
+            SM.sweep.run({ locationIds: [id] }).then(function (result) {
+              var check = result && result.checks[0];
+              if (!check) {
+                handle.update({ tone: 'warning', title: 'Nothing was checked' });
+                return;
+              }
+              handle.update({
+                tone: check.functional ? 'success' : 'error',
+                title: location.name + ' is ' + check.status.toLowerCase(),
+                desc: (check.functional
+                  ? SM.fmt.latency(check.avg_latency_ms) + ' · ' +
+                    SM.fmt.percent(check.loss_pct, 0) + ' loss'
+                  : check.issues) +
+                  (check.source === 'sim' ? ' · simulated' : '')
+              });
+            }, function (err) {
+              handle.update({ tone: 'error', title: 'The check failed',
+                              desc: String(err && err.message || err) });
             });
           } },
         { separator: true },

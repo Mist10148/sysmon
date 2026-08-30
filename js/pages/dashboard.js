@@ -46,6 +46,8 @@ SM.pages.dashboard = (function () {
     var selectedId = null;
     var busyIds = [];
     var sweepTimer = null;
+    /* A sweep can now outlive the page it was started from. */
+    var destroyed = false;
 
     ctx.view.innerHTML = html`
       <div id="d-header"></div>
@@ -204,14 +206,16 @@ SM.pages.dashboard = (function () {
     /* ---------- the sweep ---------- */
 
     /*
-      The probe is instantaneous here, and that is a lie the interface should not
-      tell: pressing "Check All Now" and getting a finished answer in the same
-      frame reads as a button that did nothing. So the pins pulse first, for
-      roughly as long as the configured packet count and timeout say a real sweep
-      of this many sites would take.
+      With the probe agent running, a sweep takes as long as the pings take and
+      the pins pulse for exactly that long. Without it the answer is simulated
+      and arrives in the same frame, which reads as a button that did nothing -
+      so there is a floor on the feedback, not a fabricated delay. The time in
+      the toast is measured either way.
     */
+    var MIN_FEEDBACK_MS = 450;
+
     function runSweep(locationIds) {
-      if (busyIds.length) return;
+      if (busyIds.length || SM.sweep.isRunning()) return;
       var targets = locationIds ||
         SM.queries.currentStatus({}).map(function (r) { return r.id; });
       if (!targets.length) {
@@ -227,38 +231,45 @@ SM.pages.dashboard = (function () {
         title: locationIds ? 'Checking one site…' : 'Checking every system…'
       });
 
-      var packets = SM.store.settingInt('sweep_packets');
-      var timeout = SM.store.settingInt('sweep_timeout_ms');
-      var wait = Math.min(2200, 400 + packets * timeout * 0.12);
+      var startedAt = new Date().getTime();
 
-      sweepTimer = setTimeout(function () {
-        sweepTimer = null;
-        var result;
-        try {
-          result = SM.sweep.run({ locationIds: locationIds });
-        } catch (err) {
-          busyIds = [];
-          update();
-          handle.update({ tone: 'error', title: 'The sweep failed',
-                          desc: String(err.message || err) });
-          return;
-        }
-        busyIds = [];
-        update();
+      /*
+        Whatever is left of the floor once the sweep has actually finished.
+        Nothing is added to a sweep that took longer than that.
+      */
+      function settle(fn) {
+        var left = Math.max(0, MIN_FEEDBACK_MS - (new Date().getTime() - startedAt));
+        sweepTimer = setTimeout(function () {
+          sweepTimer = null;
+          /* The page can be navigated away from while the agent is measuring.
+             The toast lives outside the page and is safe to update; the pins
+             do not exist any more. */
+          if (!destroyed) { busyIds = []; update(); }
+          fn();
+        }, left);
+      }
 
-        if (!result || !result.checks.length) {
-          handle.update({ tone: 'warning', title: 'Nothing was checked',
-                          desc: 'Every site or system involved is switched off.' });
-          return;
-        }
-
-        handle.update({
-          tone: result.down ? 'warning' : 'success',
-          title: 'Checked ' + SM.fmt.plural(result.targets, 'target') +
-                 ' in ' + (wait / 1000).toFixed(1) + 's',
-          desc: result.functional + ' functional · ' + result.down + ' down'
+      SM.sweep.run({ locationIds: locationIds }).then(function (result) {
+        settle(function () {
+          if (!result || !result.checks.length) {
+            handle.update({ tone: 'warning', title: 'Nothing was checked',
+                            desc: 'Every site or system involved is switched off.' });
+            return;
+          }
+          handle.update({
+            tone: result.down ? 'warning' : 'success',
+            title: 'Checked ' + SM.fmt.plural(result.targets, 'target') +
+                   ' in ' + (result.elapsedMs / 1000).toFixed(1) + 's',
+            desc: result.functional + ' functional · ' + result.down + ' down' +
+                  SM.sweep.sourceNote(result)
+          });
         });
-      }, wait);
+      }, function (err) {
+        settle(function () {
+          handle.update({ tone: 'error', title: 'The sweep failed',
+                          desc: String(err && err.message || err) });
+        });
+      });
     }
 
     /* ---------- events ---------- */
@@ -295,6 +306,7 @@ SM.pages.dashboard = (function () {
     ctx.onCleanup(function () { clearInterval(ticker); });
 
     ctx.onCleanup(function () {
+      destroyed = true;
       if (sweepTimer) clearTimeout(sweepTimer);
       teardownMap();
     });
