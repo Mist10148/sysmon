@@ -63,6 +63,13 @@ SM.importer = (function () {
         }
 
         if (table === 'settings') {
+          /* Guarded here as well as below: this branch returns before the
+             duplicate check every other table gets, so without this a second
+             settings file would silently overwrite the first. */
+          if (tables.settings) {
+            skipped.push(file.name + ' - a second file for settings, ignored');
+            continue;
+          }
           tables.settings = SM.txt.parseSettings(file.text);
           counts.settings = Object.keys(tables.settings).length;
           continue;
