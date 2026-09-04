@@ -182,13 +182,29 @@ same costume, so the first target you point it at must be one you can prove is u
 
 ## Backlog
 
-- [ ] A second seed of demo HTTP systems, so the four non-queueing systems have
+All of these are done. Kept, ticked, because the reasons they were worth doing
+are still the best short description of what they are for.
+
+- [x] A second seed of demo HTTP systems, so the four non-queueing systems have
       sites out of the box
-- [ ] Keyboard shortcuts for the seven pages
-- [ ] A compare-two-ranges mode on Analytics
-- [ ] Optional CSV import for sites, for an office that keeps its list in a
+- [x] Keyboard shortcuts for the seven pages
+- [x] A compare-two-ranges mode on Analytics
+- [x] Optional CSV import for sites, for an office that keeps its list in a
       spreadsheet
-- [ ] An `apple-touch-icon` that is a PNG. It currently points at the SVG favicon,
+- [x] An `apple-touch-icon` that is a PNG. It currently points at the SVG favicon,
       which iOS has never supported, so "add to home screen" gets a screenshot
-- [ ] A live-versus-simulated split on Analytics, so a month that was partly
+- [x] A live-versus-simulated split on Analytics, so a month that was partly
       measured can be read as such rather than averaged together
+
+Also done in the same pass, from an audit rather than from this list: a skip
+link and a main landmark, a latency trend on the status card, a "view history"
+jump from a site, the targets rail saying how many cards are below the fold,
+and the removal of an unused skeleton primitive.
+
+## Still open
+
+- [ ] The sample export in `data/sysmon-locations.txt` has drifted from the
+      built-in seed - nine rows against sixteen, and one of them points at a
+      system the seed does not put sites on. It is only a format sample, so
+      nothing reads it, but it should either track the seed or say that it does
+      not.

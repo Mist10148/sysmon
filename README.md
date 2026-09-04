@@ -59,8 +59,8 @@ shows one. It works by double-clicking the file from disk and it works served fr
 a web server; the scripts are ordinary `<script>` tags rather than ES modules
 precisely so that the first of those is true.
 
-The first time it opens, SysMon seeds itself with the five systems and eight sites
-the previous build shipped with, and generates six weeks of history so the History
+The first time it opens, SysMon seeds itself with five systems and sixteen sites
+across Western Visayas, and generates six weeks of history so the History
 and Analytics pages have something real to show. Everything after that is yours.
 
 To put it on a phone or tablet, open the Pages URL above, or run `SysMon.bat --lan`
@@ -103,6 +103,13 @@ worth knowing about:
 - **Everything on the published copy.** A page served over `https` may not fetch
   `http://localhost`, so it does not try.
 
+**Analytics will separate the two for you.** Its Source filter narrows a range to
+what was actually measured, or to what was simulated, and the header says how the
+unfiltered range splits either way. This matters more than it sounds: on a month
+that is part measured and part not, the blended figure is neither. A range that
+reads 98.89% overall can be 98.33% across the checks that were really taken — and
+that is the number a report should carry.
+
 The simulation itself is built to be honest in two ways, and both still matter
 because it is what History is full of:
 
@@ -110,7 +117,7 @@ because it is what History is full of:
   address and the half-hour slot it falls in, so regenerating a month gives the same
   month. A report that changed its own figures on reload would be worse than
   useless. Change `seed_salt` in the settings file to get a different month out of
-  the same eight sites.
+  the same sixteen sites.
 - **Outages are episodes, not noise.** A coin flip per check would give three per
   cent downtime scattered as isolated failures, which makes mean time to recovery
   meaningless and the uptime chart a band of static. Here an outage starts, persists
@@ -142,6 +149,13 @@ search is narrowing the list, or it is sorted by something other than that order
 moving row 3 above row 2 has no meaning — so the arrows go grey and say why rather
 than reordering something you cannot see.
 
+**Keyboard.** Press <kbd>g</kbd> then the first letter of a page — `g d` Dashboard,
+`g y` Systems, `g l` Locations, `g h` History, `g a` Analytics, `g v` Activity,
+`g s` Settings. <kbd>/</kbd> focuses the search box and <kbd>?</kbd> lists the lot.
+The prefix is there on purpose: this is an application full of text fields, and a
+bare letter that navigates is a bare letter that throws away what you were typing.
+Shortcuts stay out of the way while you are in a field, a dialog or a menu.
+
 ## Systems and sites
 
 A **system** is a service. A **site** is one office running one system. The system
@@ -160,6 +174,24 @@ and neither can be undone.
 Removing a site defaults to switching it off, which keeps its history and keeps
 checking it for any other system it also runs. The toast that confirms it carries
 an Undo. Deleting a site outright asks a second time.
+
+## Sites from a spreadsheet
+
+Settings has two importers, and they are different verbs.
+
+**Import** replaces whole tables from a SysMon `.txt` export. It is the other half
+of Export: the files carry ids, so the tables come back exactly as they left.
+
+**Import sites CSV** merges. It adds sites it has not seen and updates the ones it
+has, matching on site name plus system, and it never removes anything. That is the
+one for an office that keeps its list in a spreadsheet — no ids required, and a
+partial list is fine. Export sites CSV first if you want the column headings:
+
+    LHIO,System,IP,Region,Latitude,Longitude,Active
+
+A row naming a system that does not exist is skipped and reported rather than
+guessed at, and the dialog says exactly what will be added and updated before
+anything happens.
 
 ## Your data
 
@@ -203,8 +235,8 @@ Sample files are in [`data/`](data/), and the format is specified in
 [docs/DATA-FORMAT.md](docs/DATA-FORMAT.md).
 
 **The limit worth knowing.** Browser storage is a few megabytes, and a check record
-carries its full ping output. Six weeks of three-sweeps-a-day across eight sites is
-about 1.2 MB, so there is plenty of room — but a year of five-minute sweeps would
+carries its full ping output. Six weeks of three-sweeps-a-day across sixteen sites
+is about 1.5 MB, so there is plenty of room — but a year of five-minute sweeps would
 not fit. Settings shows how much is being used, and the Activity page can prune
 itself. Export before you prune.
 
@@ -223,7 +255,7 @@ data moves between them.
 | **Systems** | What a system is and how its sites are checked. |
 | **Locations** | One row per site per system, with a map you click to place them. |
 | **History** | The monitoring form. Filter it, edit the two prose columns, export it. |
-| **Analytics** | Uptime, outages, mean time to recovery and latency over a date range. |
+| **Analytics** | Uptime, outages, mean time to recovery and latency over a date range. Filter by whether a figure was measured or simulated, and compare the range against another one. |
 | **Activity** | Everything that happened, by day. |
 | **Settings** | Where the checks come from, the sweep schedule and options, your data, notifications, appearance. |
 
