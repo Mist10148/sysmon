@@ -31,9 +31,31 @@
   height: 55svh;
   min-height: 320px;
 }
+/*
+  From 1024px up the map takes the height the window has left.
+
+  .map-frame here is a ROW, so the flex: 1 on .map-shell is sizing its *width*;
+  its height comes from align-items: stretch. That is why the 560px min-height
+  that used to sit on both the shell and the rail pinned the whole row to 560px
+  no matter how tall the window was. The frame itself is now the flex item that
+  grows, and the two children stretch into it.
+*/
 @media (min-width: 1024px) {
-  .map-shell { min-height: 560px; height: auto; flex: 1 1 0%; }
-  .map-frame { flex-direction: row; align-items: stretch; }
+  .map-shell { min-height: 0; height: auto; flex: 1 1 0%; }
+  .map-frame {
+    flex-direction: row;
+    align-items: stretch;
+    /*
+      Basis 0, not auto. Between 1024 and 1279 the rail is still in flow, and
+      eight target cards are about 1200px of content - with an auto basis that
+      content becomes the height of the row and the map grows to match it,
+      pushing the whole thing off the bottom of the window. At 0 the frame
+      contributes nothing to its parent, takes the height that is left over
+      instead, and the rail scrolls inside it.
+    */
+    flex: 1 1 0;
+    min-height: 26.25rem;
+  }
 }
 
 .map-canvas { position: absolute; inset: 0; }
@@ -110,7 +132,7 @@
     width: var(--rail-w);
     flex: none;
     align-content: start;
-    max-height: 560px;
+    min-height: 0;
     overflow-y: auto;
     border-radius: var(--radius-xl);
     padding: 0.875rem;
@@ -126,7 +148,12 @@
 /* 1280px and up: floating over the map. */
 @media (min-width: 1280px) {
   .map-frame { display: block; }
-  .map-shell { min-height: 620px; }
+  /*
+    Back to a block frame, so percentage height rather than stretch. The floor
+    is for a short laptop window, where filling the height would otherwise
+    leave a map too shallow to find anything in.
+  */
+  .map-shell { height: 100%; min-height: 26.25rem; }
   .rail {
     position: absolute;
     top: 0.75rem;

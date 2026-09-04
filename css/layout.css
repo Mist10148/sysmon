@@ -69,6 +69,39 @@
 .view { min-width: 0; }
 .view:focus { outline: none; }
 
+/*
+  The height chain, from the window down to whatever the page wants to fill.
+
+  .app-frame is min-height: 100dvh and .main is a stretched flex column inside
+  it, so once .view is a flex item with a real basis the window height reaches
+  the page. Everything here is flex-basis: auto rather than 0, which is what
+  keeps a long page behaving exactly as it did: the frame grows past the
+  viewport and the document scrolls. No inner scroll pane is introduced.
+
+  .fill is the opt-in. A page marks the one child that should take the leftover
+  height - only the Dashboard map does today - and every other page is
+  unchanged, because a .page-body whose children have no flex grow simply ends
+  up taller than its content and looks identical.
+
+  Below 1024px none of this applies. The phone lays out by scrolling, and the
+  map there is already sized against the viewport with 55svh.
+*/
+@media (min-width: 1024px) {
+  .view {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .page-body { flex: 1 1 auto; min-height: 0; }
+  .fill {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
 /* ---------- sidebar ---------- */
 
 .sidebar {

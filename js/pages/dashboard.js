@@ -55,7 +55,7 @@ SM.pages.dashboard = (function () {
         <div id="d-chips"></div>
         <div id="d-toolbar"></div>
         <div class="summary" id="d-summary"></div>
-        <div id="d-body"></div>
+        <div id="d-body" class="fill"></div>
       </div>`;
     root = ctx.view;
 
