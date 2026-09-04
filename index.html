@@ -9,7 +9,13 @@
 <meta name="theme-color" content="#faf9f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1b1a18" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="assets/favicon.svg">
+<!--
+  A PNG, not the SVG favicon: iOS has never supported SVG here, so pointing at
+  it meant "add to home screen" saved a screenshot of the page instead. It is
+  square and full-bleed on purpose - iOS rounds the corners itself, and a
+  second rounding on top reads as a shrunken icon.
+-->
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 
 <!--
   Theme, before the first paint.
