@@ -125,10 +125,10 @@ dialog.dialog {
 .menu {
   position: fixed;
   z-index: 60;
-  min-width: 11rem;
+  min-width: 13.75rem;
   max-width: min(20rem, calc(100vw - 1.5rem));
-  border-radius: var(--radius-xl);
-  padding: 0.3rem;
+  border-radius: var(--radius);
+  padding: 0.375rem;
   animation: sysmon-pop-in 140ms var(--ease-spring);
 }
 .menu-label {
@@ -143,9 +143,10 @@ dialog.dialog {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.5rem 0.625rem;
-  border-radius: var(--radius-md);
+  padding: 0.5625rem 0.625rem;
+  border-radius: var(--radius-xs);
   font-size: 13px;
+  font-weight: 500;
   text-align: left;
   color: var(--ink);
 }
@@ -154,7 +155,7 @@ dialog.dialog {
 .menu-item-desc { font-size: 11px; color: var(--ink-faint); }
 .menu-item[data-tone="destructive"] { color: var(--down); }
 .menu-item[data-tone="destructive"] .icon { color: var(--down); }
-.menu-sep { height: 1px; margin: 0.25rem 0.25rem; background: var(--hairline); }
+.menu-sep { height: 1px; margin: 0.25rem 0.375rem; background: var(--hairline); }
 
 .tooltip {
   position: fixed;
@@ -189,22 +190,18 @@ dialog.dialog {
   display: flex;
   align-items: flex-start;
   gap: 0.625rem;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sm);
   padding: 0.75rem 0.875rem;
   pointer-events: auto;
   animation: sysmon-sheet 260ms var(--ease-spring);
-  border-left: 3px solid transparent;
 }
 .toast[data-leaving="true"] { animation: sysmon-fade 160ms var(--ease-spring) reverse forwards; }
-.toast-title { font-size: 13px; font-weight: 550; letter-spacing: -0.005em; }
+.toast-title { font-size: 12.5px; font-weight: 500; letter-spacing: -0.005em; }
 .toast-desc { font-size: 12px; color: var(--ink-muted); margin-top: 0.1rem; }
-.toast .icon { margin-top: 1px; }
+.toast > .icon { width: 1.0625rem; height: 1.0625rem; margin-top: 1px; }
+.toast > .spinner { margin-top: 1px; color: var(--ink-muted); }
 
-.toast[data-tone="success"] { border-left-color: var(--ok); }
 .toast[data-tone="success"] > .icon { color: var(--ok); }
-.toast[data-tone="error"] { border-left-color: var(--down); }
 .toast[data-tone="error"] > .icon { color: var(--down); }
-.toast[data-tone="warning"] { border-left-color: var(--warn); }
 .toast[data-tone="warning"] > .icon { color: var(--warn-ink); }
-.toast[data-tone="loading"] > .icon { color: var(--accent); }
 .toast[data-tone="info"] > .icon { color: var(--ink-faint); }

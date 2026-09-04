@@ -86,7 +86,8 @@ SM.ui = SM.ui || {};
           attr('aria-invalid', o.error ? 'true' : null) +
           (o.required ? ' required' : '') +
           (o.disabled ? ' disabled' : '') + '>')}
-        ${o.error ? raw('<p class="field-error">' + SM.dom.esc(o.error) + '</p>')
+        ${o.error ? raw('<p class="field-error">' + icon('alert-triangle') +
+                        '<span>' + SM.dom.esc(o.error) + '</span></p>')
                   : (o.hint ? raw('<p class="field-hint">' + SM.dom.esc(o.hint) + '</p>') : '')}
       </div>`);
   }
@@ -242,7 +243,7 @@ SM.ui = SM.ui || {};
     var o = opts || {};
     return raw(html`
       <div class="empty">
-        ${o.icon ? raw(icon(o.icon, 'icon-xl')) : ''}
+        ${o.icon ? raw('<span class="empty-icon">' + icon(o.icon) + '</span>') : ''}
         <p class="empty-title">${o.title}</p>
         ${o.desc ? raw('<p class="empty-desc">' + SM.dom.esc(o.desc) + '</p>') : ''}
         ${o.action || ''}

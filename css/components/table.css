@@ -21,17 +21,31 @@
 
 .table { width: 100%; }
 
+/*
+  The header is a sunken bar rather than a hairline under small caps. Six of
+  these tables are wide enough to scroll sideways, and a filled bar keeps the
+  header legible as a single object while the columns move under it.
+*/
 .table th {
   height: 2.5rem;
   padding-inline: 0.75rem;
   text-align: left;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  color: var(--ink-muted);
   white-space: nowrap;
-  border-bottom: 1px solid var(--hairline);
+  background: var(--sunken);
+  border-block: 1px solid var(--hairline);
+}
+.table th:first-child {
+  border-left: 1px solid var(--hairline);
+  border-start-start-radius: var(--radius-sm);
+  border-end-start-radius: var(--radius-sm);
+}
+.table th:last-child {
+  border-right: 1px solid var(--hairline);
+  border-start-end-radius: var(--radius-sm);
+  border-end-end-radius: var(--radius-sm);
 }
 .table td {
   padding: 0.625rem 0.75rem;
@@ -40,6 +54,12 @@
 }
 .table tbody tr { border-bottom: 1px solid var(--hairline); }
 .table tbody tr:last-child { border-bottom-width: 0; }
+
+/*
+  Alternating rows. These tables are read across - LHIO, system, date, status,
+  remarks - and at eight columns the eye loses the line without a banding cue.
+*/
+.table tbody tr:nth-child(even) { background: var(--canvas); }
 .table tbody tr:hover { background: color-mix(in srgb, var(--sunken) 60%, transparent); }
 
 .table .num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -58,7 +78,8 @@
   padding: 0;
 }
 .sort-head:hover { color: var(--ink); }
-.sort-head .icon { width: 0.75rem; height: 0.75rem; opacity: 0; }
+.sort-head .icon { width: 0.8125rem; height: 0.8125rem; opacity: 0; }
+.sort-head[aria-sort] { color: var(--ink); }
 .sort-head[aria-sort] .icon { opacity: 1; }
 
 /* Row action menu trigger sits flush right. */
@@ -93,6 +114,8 @@
   }
 
   .table-stack thead { display: none; }
+  /* Cards, not rows: the banding has nothing left to band. */
+  .table-stack tbody tr:nth-child(even) { background: none; }
   .table-stack td[data-hidden-mobile] { display: none; }
 
   .table-stack tr {
@@ -112,11 +135,9 @@
   .table-stack td[data-label]::before {
     content: attr(data-label);
     flex: none;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--ink-muted);
   }
 
   /* The headline of the card: no label, and the full width to itself. */

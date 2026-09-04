@@ -10,7 +10,7 @@
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--hairline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);
   font-size: 16px;
@@ -25,22 +25,38 @@
 }
 .field[aria-invalid="true"] { border-color: var(--down); }
 
-input.field { height: 2.5rem; }
+/* 44px for a thumb, 38px for a pointer - the same step the buttons take. */
+input.field { height: 2.75rem; }
 textarea.field { min-height: 5rem; resize: vertical; line-height: 1.45; }
 
 @media (min-width: 640px) {
   .field { font-size: 13px; }
+  input.field { height: 2.375rem; }
 }
 
 .field-label {
   display: block;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--ink-muted);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.375rem;
 }
-.field-hint { font-size: 11px; color: var(--ink-faint); margin-top: 0.3rem; }
-.field-error { font-size: 11px; color: var(--down); margin-top: 0.3rem; }
+.field-hint { font-size: 11px; color: var(--ink-faint); margin-top: 0.375rem; }
+
+/*
+  An error names itself with a glyph as well as a colour, for the same reason
+  the badges do: red alone is not a message.
+*/
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--down);
+  margin-top: 0.375rem;
+}
+.field-error .icon { width: 0.8125rem; height: 0.8125rem; }
 
 /* ---------- select ---------- */
 /*
@@ -71,11 +87,11 @@ textarea.field { min-height: 5rem; resize: vertical; line-height: 1.45; }
   border-color: transparent;
   background-color: transparent;
   box-shadow: none;
-  height: 1.75rem;
+  height: 1.625rem;
   padding: 0 1.5rem 0 0.5rem;
   font-size: 12px;
-  font-weight: 500;
-  border-radius: 999px;
+  font-weight: 600;
+  border-radius: var(--radius-xs);
   background-position: right 0.3rem center;
   background-size: 0.85rem 0.85rem;
   width: auto;
@@ -120,13 +136,19 @@ textarea.field { min-height: 5rem; resize: vertical; line-height: 1.45; }
 .switch:checked::after { transform: translateX(20px); }
 .switch:disabled { cursor: not-allowed; }
 
+@media (min-width: 640px) {
+  .switch { width: 38px; height: 22px; }
+  .switch::after { width: 16px; height: 16px; top: 2px; left: 2px; box-shadow: var(--shadow-contact); }
+  .switch:checked::after { transform: translateX(16px); }
+}
+
 .switch-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
-.switch-row-label { font-size: 13px; }
+.switch-row-label { font-size: 13.5px; }
 .switch-row-hint { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
 
 /* ---------- search field ---------- */

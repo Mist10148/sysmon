@@ -105,6 +105,20 @@
   padding: 2.5rem 1.5rem;
   text-align: center;
 }
-.empty .icon { width: 1.5rem; height: 1.5rem; color: var(--ink-faint); }
-.empty-title { font-size: 14px; font-weight: 500; }
-.empty-desc { font-size: 13px; color: var(--ink-muted); max-width: 28rem; }
+/*
+  The glyph sits in a tile rather than floating. An empty state is the one
+  screen with nothing else on it to set the scale, and a bare 24px outline in
+  the middle of a card read as a rendering failure rather than as an answer.
+*/
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--sunken);
+  color: var(--ink-faint);
+}
+.empty-icon .icon { width: 1.375rem; height: 1.375rem; }
+.empty-title { font-size: 14px; font-weight: 600; }
+.empty-desc { font-size: 12.5px; color: var(--ink-muted); max-width: 18rem; text-wrap: pretty; }

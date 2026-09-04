@@ -79,7 +79,9 @@ SM.toast = (function () {
     var tone = o.tone || 'info';
     node.dataset.tone = tone;
     node.innerHTML = SM.dom.html`
-      ${SM.dom.raw(SM.dom.icon(ICONS[tone] || 'info', tone === 'loading' ? 'spin' : ''))}
+      ${SM.dom.raw(tone === 'loading'
+        ? '<span class="spinner" aria-hidden="true"></span>'
+        : SM.dom.icon(ICONS[tone] || 'info'))}
       <div class="min-w-0 flex-1">
         <div class="toast-title">${o.title}</div>
         ${o.desc ? SM.dom.raw('<div class="toast-desc">' + SM.dom.esc(o.desc) + '</div>') : ''}
