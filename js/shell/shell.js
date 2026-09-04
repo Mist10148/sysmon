@@ -136,6 +136,19 @@ SM.shell = (function () {
 
     scrim.addEventListener('click', function () { closeDrawer(true); });
 
+    /*
+      #view already carries tabindex="-1" so it can take focus without joining
+      the tab order. Focusing it is what actually moves a screen reader on;
+      scrolling alone would leave the reading cursor in the sidebar.
+    */
+    SM.dom.delegate(document, 'click', '[data-act="skip-to-content"]', function (event) {
+      event.preventDefault();
+      var view = SM.dom.qs('#view');
+      if (!view) return;
+      view.focus();
+      view.scrollIntoView({ block: 'start' });
+    });
+
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && drawerOpen) {
         event.stopPropagation();

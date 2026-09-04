@@ -133,6 +133,16 @@
 </svg>
 
 <div class="vibrancy-wash app-root">
+
+  <!--
+    First thing in the tab order. Without it every navigation puts the brand and
+    seven nav links between the keyboard and the page.
+
+    It is a button rather than an <a href="#view"> because the hash is the
+    router: a fragment link here would be parsed as a route and navigate.
+  -->
+  <button type="button" class="skip-link" data-act="skip-to-content">Skip to content</button>
+
   <div class="app-frame">
 
     <!-- Below 1024px this is an off-canvas drawer; above it, a sticky column. -->
@@ -145,7 +155,8 @@
         <svg class="icon" aria-hidden="true"><use href="#i-wifi-off"/></svg>
         <span>Offline — SysMon keeps working; nothing here needs the network.</span>
       </div>
-      <div id="view" class="view" tabindex="-1"></div>
+      <!-- role="main" rather than <main>, so the router keeps one mount point. -->
+      <div id="view" class="view" role="main" tabindex="-1"></div>
     </div>
 
   </div>

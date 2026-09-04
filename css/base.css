@@ -109,6 +109,34 @@ hr { border-top-width: 1px; }
 ::-webkit-scrollbar-thumb:hover { background-clip: content-box; opacity: 1; }
 ::-webkit-scrollbar-corner { background: transparent; }
 
+/*
+  Hidden until it is focused, then it sits over the top-left corner. It is
+  never display:none, because a keyboard user has to be able to reach it.
+*/
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  margin: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  box-shadow: var(--shadow-float);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  transform: translateY(-200%);
+  transition: transform 160ms var(--ease-spring);
+}
+/*
+  :focus, not :focus-visible. The link only exists off-screen, so nothing but
+  a keyboard can reach it in the first place, and :focus-visible depends on a
+  browser heuristic that a skip link should not have to win.
+*/
+.skip-link:focus { transform: translateY(0); }
+
 /* Visually hidden, still read aloud. */
 .sr-only {
   position: absolute;
