@@ -57,7 +57,8 @@ SM.pages.analytics = (function () {
         from: p.from || d.from,
         to: p.to || d.to,
         systemId: p.system ? parseInt(p.system, 10) : null,
-        isDefault: !p.from && !p.to && !p.system
+        source: p.source === 'live' || p.source === 'sim' ? p.source : null,
+        isDefault: !p.from && !p.to && !p.system && !p.source
       };
     }
 
@@ -66,13 +67,15 @@ SM.pages.analytics = (function () {
     function update() {
       var state = readState();
       var data = SM.analytics.compute({
-        from: state.from, to: state.to, systemTypeId: state.systemId
+        from: state.from, to: state.to, systemTypeId: state.systemId,
+        source: state.source
       });
 
       elHeader.innerHTML = SM.ui.PageHeader({
         title: 'Analytics',
         desc: 'Uptime, latency and outages over a date range — the figures a ' +
-              'monthly report is written from'
+              'monthly report is written from',
+        provenance: provenanceNote(data.provenance, state.source)
       }).__html;
 
       elFilters.innerHTML = filterCard(state);
@@ -144,7 +147,7 @@ SM.pages.analytics = (function () {
       var systems = SM.queries.systemTypes({ includeInactive: true });
       return html`
         <div class="card-body pt-5">
-          <div class="filters">
+          <div class="filters filters-6">
             ${SM.ui.Field({ name: 'from', label: 'From', type: 'date', value: state.from,
                             max: state.to, act: 'filter-from' })}
             ${SM.ui.Field({ name: 'to', label: 'To', type: 'date', value: state.to,
@@ -152,12 +155,40 @@ SM.pages.analytics = (function () {
             ${SM.ui.Select({ name: 'system', label: 'System', value: state.systemId || '',
                              placeholder: 'All systems', act: 'filter-system',
                              options: systems.map(function (s) { return [s.id, s.name]; }) })}
+            ${SM.ui.Select({ name: 'source', label: 'Source', value: state.source || '',
+                             placeholder: 'Measured and simulated', act: 'filter-source',
+                             options: [['live', 'Measured only'], ['sim', 'Simulated only']] })}
             <div class="filters-reset">
               ${SM.ui.Button({ label: 'Reset', icon: 'rotate-ccw', variant: 'secondary',
                                act: 'reset-filters', disabled: state.isDefault })}
             </div>
           </div>
         </div>`;
+    }
+
+    /*
+      Where these figures came from.
+
+      The counts are taken over the range *before* the source filter, so the
+      sentence stays true while the page is showing only one source: a month
+      that was half measured reads as half measured, rather than averaging the
+      two together and saying nothing about either.
+
+      Wording follows the Dashboard's note, so the same fact is phrased the
+      same way in both places.
+    */
+    function provenanceNote(counted, source) {
+      if (!counted || !counted.all) return '';
+
+      if (source === 'live') {
+        return 'measured only · ' + counted.live + ' of ' + counted.all + ' checks';
+      }
+      if (source === 'sim') {
+        return 'simulated only · ' + counted.sim + ' of ' + counted.all + ' checks';
+      }
+      if (!counted.sim) return 'all measured';
+      if (counted.sim === counted.all) return 'simulated, not measured';
+      return counted.sim + ' of ' + counted.all + ' simulated';
     }
 
     /* ---------- the chart ---------- */
@@ -353,6 +384,9 @@ SM.pages.analytics = (function () {
     }));
     ctx.onCleanup(SM.dom.delegate(root, 'change', '[data-act="filter-system"]', function (e, node) {
       SM.router.patchParams({ system: node.value || null });
+    }));
+    ctx.onCleanup(SM.dom.delegate(root, 'change', '[data-act="filter-source"]', function (e, node) {
+      SM.router.patchParams({ source: node.value || null });
     }));
     ctx.onCleanup(SM.dom.delegate(root, 'click', '[data-act="reset-filters"]', function () {
       SM.router.setParams({});

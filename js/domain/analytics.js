@@ -19,7 +19,8 @@ SM.analytics = (function () {
   /* options: { from, to, systemTypeId } - from/to are YYYY-MM-DD, inclusive. */
   function compute(options) {
     var opts = options || {};
-    var rows = collect(opts);
+    var counted = { all: 0, live: 0, sim: 0 };
+    var rows = collect(opts, counted);
 
     var totals = { checks: rows.length, up: 0, latencySum: 0, latencyCount: 0 };
     var byDay = {};
@@ -52,6 +53,11 @@ SM.analytics = (function () {
         uptimePct: totals.checks ? (totals.up / totals.checks) * 100 : null,
         avgLatencyMs: totals.latencyCount ? totals.latencySum / totals.latencyCount : null
       },
+      /*
+        Counts over the range *before* the source filter, so the page can say
+        "412 of 1000 simulated" while showing only one of the two.
+      */
+      provenance: counted,
       outages: outages,
       ongoing: outages.length - recovered.length,
       mttrMs: mttr,
@@ -76,7 +82,17 @@ SM.analytics = (function () {
     return Math.min(now, last.getTime());
   }
 
-  function collect(opts) {
+  /*
+    The source filter is applied here rather than at aggregation time, for two
+    reasons. It is before decorateCheck, which linear-scans the locations array
+    for every row, so filtering first is the cheap order. And it keeps the
+    outages honest: findOutages walks runs of Down rows, and a run must not be
+    closed by a row the caller has just said it does not want to see.
+
+    `counted` is filled in on the way past so the page can say how much of the
+    unfiltered range was measured without computing the whole thing twice.
+  */
+  function collect(opts, counted) {
     var out = [];
     var list = SM.store.get().checks;
     for (var i = 0; i < list.length; i++) {
@@ -85,6 +101,14 @@ SM.analytics = (function () {
       if (opts.to && day > opts.to) continue;
       var row = SM.queries.decorateCheck(list[i]);
       if (opts.systemTypeId && row.system_type_id !== opts.systemTypeId) continue;
+
+      if (counted) {
+        counted.all++;
+        if (row.source === 'sim') counted.sim++;
+        else if (row.source === 'live') counted.live++;
+      }
+
+      if (opts.source && row.source !== opts.source) continue;
       out.push(row);
     }
     return out;
