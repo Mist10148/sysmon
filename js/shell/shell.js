@@ -86,6 +86,135 @@ SM.shell = (function () {
     return icon('monitor', 'icon-lg');
   }
 
+  /* ---------- keyboard shortcuts ---------- */
+
+  /*
+    g-then-letter, the way Gmail and GitHub do it.
+
+    A bare letter would be a worse choice than it looks: this application is
+    full of text fields, and a single key that navigates is a single key that
+    throws away what someone was typing the moment focus is anywhere unexpected.
+    The g prefix makes the gesture deliberate, and it costs nothing to learn
+    because the letters are the page names.
+
+    Letters are paired to route ids rather than to positions, so re-ordering
+    the sidebar cannot silently re-point somebody's muscle memory.
+  */
+  var KEYS = {
+    d: 'dashboard', y: 'systems', l: 'locations', h: 'history',
+    a: 'analytics', v: 'activity', s: 'settings'
+  };
+
+  var PENDING_MS = 1500;
+  var pending = false;
+  var pendingTimer = null;
+
+  function armPending() {
+    pending = true;
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(function () { pending = false; }, PENDING_MS);
+  }
+
+  function clearPending() {
+    pending = false;
+    clearTimeout(pendingTimer);
+  }
+
+  /*
+    Everything that means "these keys are not ours right now".
+
+    Dialogs are native showModal(), so the browser has already made the rest of
+    the document inert - but keydown still reaches document, which is why the
+    dialog[open] test is here and not left to the platform. The menu preventDefaults
+    its own arrow keys, so defaultPrevented covers it without needing state
+    the overlay module does not expose.
+  */
+  function busy(event) {
+    if (event.defaultPrevented) return true;
+    if (event.altKey || event.ctrlKey || event.metaKey) return true;
+    if (drawerOpen) return true;
+    if (document.querySelector('dialog[open]')) return true;
+    if (document.querySelector('#layers .menu')) return true;
+
+    var target = event.target;
+    if (target && target.closest &&
+        target.closest('input, textarea, select, [contenteditable]')) return true;
+
+    return false;
+  }
+
+  function onShortcut(event) {
+    if (busy(event)) { clearPending(); return; }
+
+    var key = event.key;
+
+    if (pending) {
+      clearPending();
+      var id = KEYS[key.toLowerCase()];
+      if (!id) return;
+      var route = findRoute(id);
+      if (!route) return;
+      event.preventDefault();
+      SM.router.go(route.path);
+      return;
+    }
+
+    if (key === 'g' || key === 'G') { armPending(); return; }
+
+    if (key === '/') {
+      var search = SM.dom.qs('[data-act="search"]');
+      if (!search) return;
+      event.preventDefault();
+      search.focus();
+      search.select();
+      return;
+    }
+
+    if (key === '?') {
+      event.preventDefault();
+      openShortcutSheet();
+    }
+  }
+
+  function findRoute(id) {
+    var list = SM.router.ROUTES;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  }
+
+  /*
+    No open/closed flag here: busy() already refuses every shortcut while a
+    dialog is open, so a second ? cannot reach this function to stack a second
+    copy of the sheet.
+  */
+  function openShortcutSheet() {
+    var rows = SM.router.ROUTES.map(function (route) {
+      var key = null;
+      for (var k in KEYS) { if (KEYS[k] === route.id) key = k; }
+      return key ? ['g ' + key, route.label] : null;
+    }).filter(Boolean).concat([
+      ['/', 'Focus the search box'],
+      ['?', 'This list'],
+      ['Esc', 'Close a dialog, menu or drawer']
+    ]);
+
+    SM.ui.openDialog({
+      title: 'Keyboard shortcuts',
+      desc: 'Press g, then the letter of the page you want.',
+      size: 'md',
+      body: SM.dom.raw('<dl class="shortcuts">' + rows.map(function (row) {
+        return '<dt><kbd>' + SM.dom.esc(row[0]) + '</kbd></dt>' +
+               '<dd>' + SM.dom.esc(row[1]) + '</dd>';
+      }).join('') + '</dl>'),
+      footer: SM.ui.Button({ label: 'Close', variant: 'secondary', act: 'sheet-close' }),
+      onMount: function (panel, api) {
+        SM.dom.delegate(panel, 'click', '[data-act="sheet-close"]', function () { api.close(); });
+      }
+    });
+  }
+
   /* ---------- drawer ---------- */
 
   function openDrawer() {
@@ -155,6 +284,8 @@ SM.shell = (function () {
         closeDrawer(true);
       }
     });
+
+    document.addEventListener('keydown', onShortcut);
 
     /*
       Crossing 1024px with the drawer open would leave the scroll lock and the

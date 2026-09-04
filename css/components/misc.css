@@ -81,6 +81,35 @@
   .inline-edit-field { font-size: 13px; }
 }
 
+/* ---------- the keyboard shortcut sheet ---------- */
+
+.shortcuts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.5rem 0.875rem;
+  margin: 0;
+}
+.shortcuts dt { margin: 0; }
+.shortcuts dd { margin: 0; font-size: 13px; color: var(--ink-muted); }
+
+kbd {
+  display: inline-block;
+  min-width: 2rem;
+  padding: 0.1875rem 0.4375rem;
+  border-radius: var(--radius-xs);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  border-bottom-width: 2px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+  text-align: center;
+  white-space: nowrap;
+}
+
 /* ---------- charts ---------- */
 
 .chart {
