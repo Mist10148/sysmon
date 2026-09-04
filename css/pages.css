@@ -22,6 +22,13 @@
 }
 @media (min-width: 640px) { .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1024px) { .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/*
+  Now that the frame fills the window, a grid that stops counting at three
+  just makes three very wide cards. A status card is a fixed amount of text -
+  a site, a badge, an address, a reading - so past this width the answer is
+  more of them per row, not wider ones.
+*/
+@media (min-width: 1536px) { .card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
 /* ---------- history ---------- */
 
@@ -74,6 +81,9 @@
 }
 @media (min-width: 768px) {
   .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1536px) {
+  .settings-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 .setting-rows { display: flex; flex-direction: column; gap: 0.875rem; }
