@@ -18,11 +18,15 @@ SM.toast = (function () {
   var host = null;
   var seq = 0;
 
+  /*
+    Four distinct silhouettes. The toast has no tone stripe any more, so the
+    glyph is what tells success from error from warning at a glance - which
+    means error and warning cannot both be the triangle.
+  */
   var ICONS = {
-    success: 'check',
-    error: 'alert-triangle',
+    success: 'check-circle-2',
+    error: 'x-circle',
     warning: 'alert-triangle',
-    loading: 'refresh-cw',
     info: 'info'
   };
 

@@ -119,10 +119,10 @@
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   flex: none;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sm);
   background: var(--accent);
   color: var(--accent-ink);
   font-size: 13px;
@@ -130,7 +130,7 @@
   letter-spacing: -0.02em;
 }
 .brand-name { font-size: 14px; font-weight: 600; letter-spacing: -0.012em; }
-.brand-sub { font-size: 11px; color: var(--ink-muted); }
+.brand-sub { font-size: 11.5px; color: var(--ink-faint); }
 
 .nav { display: flex; flex-direction: column; gap: 2px; }
 .nav-item {
@@ -139,34 +139,40 @@
   gap: 0.625rem;
   height: 2.75rem;
   padding-inline: 0.75rem;
-  border-radius: var(--radius-xl);
-  font-size: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
   color: var(--ink-muted);
   transition: background-color 160ms var(--ease-spring), color 160ms var(--ease-spring);
 }
+.nav-item .icon { width: 1.25rem; height: 1.25rem; }
 .nav-item:hover { background: color-mix(in srgb, var(--surface) 60%, transparent); color: var(--ink); }
+
+/*
+  The current page tints rather than lifts. A raised white pill on the glass
+  sidebar competed with the cards on the page behind it; a soft accent fill
+  says "you are here" without pretending to be another surface.
+*/
 .nav-item[aria-current="page"] {
-  background: var(--surface);
-  color: var(--ink);
-  font-weight: 500;
-  box-shadow: var(--shadow-contact);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .nav-item { height: 2.375rem; }
 }
 
 .sidebar-foot { margin-top: auto; padding-top: 1rem; }
 .sweep-box {
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--sunken) 70%, transparent);
-  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  padding: 0.75rem 0.875rem;
 }
-.sweep-box-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-.sweep-box-value { font-size: 13px; font-weight: 500; margin-top: 2px; }
-.sweep-box-hint { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+.sweep-box-label { font-size: 12px; font-weight: 600; }
+.sweep-box-value { font-size: 11.5px; color: var(--ink-muted); margin-top: 2px; }
+.sweep-box-hint { font-size: 11.5px; color: var(--ink-faint); margin-top: 2px; }
 
 /* ---------- top bar ---------- */
 
@@ -197,7 +203,7 @@
   width: 44px;
   height: 44px;
   flex: none;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sm);
   color: var(--ink-muted);
 }
 .icon-button-44:hover { background: color-mix(in srgb, var(--surface) 70%, transparent); color: var(--ink); }
@@ -225,11 +231,18 @@
   padding: 1rem max(1rem, env(safe-area-inset-left)) 1rem max(1rem, env(safe-area-inset-right));
 }
 .page-header h1 {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: -0.017em;
+  letter-spacing: -0.02em;
 }
-.page-header-desc { font-size: 13px; color: var(--ink-muted); }
+.page-header-desc { font-size: 12.5px; color: var(--ink-muted); text-wrap: pretty; }
+
+/*
+  Where a number came from is part of the number. The pages append a
+  provenance clause to their description and mark it with this, one step
+  fainter than the sentence carrying it.
+*/
+.page-header-desc .provenance { color: var(--ink-faint); }
 .page-header-actions {
   display: flex;
   flex-wrap: wrap;
@@ -239,7 +252,8 @@
 
 @media (min-width: 768px) {
   .page-header { flex-direction: row; align-items: flex-start; justify-content: space-between; }
-  .page-header h1 { font-size: 24px; }
+  .page-header h1 { font-size: 26px; letter-spacing: -0.022em; }
+  .page-header-desc { font-size: 13.5px; }
 }
 @media (min-width: 1024px) {
   .page-header { padding: 1.5rem 1.5rem 1rem; }
