@@ -244,6 +244,33 @@ genuinely cannot do what a server did, and what happens instead:
 | The installer | Nothing to install. | Nothing. `SysMon.bat` starts the agent from the PowerShell already on the machine — no venv, no `pip install`, no `npm run build`, and no five minutes of installers before the first ping. |
 | Accounts and email as the reason for a server | — | The agent is not a server in that sense: no state, no database, nothing written to disk. |
 
+## The look
+
+The interface follows a set of mockups drawn for it, and the rules those
+mockups settle are worth stating because they are what keep the screens
+consistent:
+
+- **Two colour vocabularies that never overlap.** Health - functional,
+  restored, down, unknown - is the only family allowed to fill a badge. System
+  identity is categorical and lives in a dot, never in a fill and never in the
+  text colour, so a blue system is never mistaken for a healthy one.
+- **Colour is never the only cue.** Every badge carries a word, every field
+  error carries a glyph, and the four toast tones have four different
+  silhouettes. A printed monitoring form is grey and still has to be readable.
+- **Shape says what a thing does.** Commands are rounded rectangles; filters
+  are pills. They were both pills once and read as interchangeable.
+- **A map pin is a teardrop whose body is health and whose collar is the
+  system.** The legend in the corner of the map says so out loud.
+- **Where a number came from is part of the number.** Every page header can
+  carry a provenance clause - "simulated, not measured" - set one step fainter
+  than the sentence around it.
+- **44px for a thumb, 38px for a pointer.** Buttons, fields, nav items and
+  switches all carry both sizes.
+
+Colour, radius, shadow and motion live in [`css/tokens.css`](css/tokens.css)
+and nowhere else. If a component needs a shade that is not there, the shade is
+missing from the system rather than from the component.
+
 ## Browser support
 
 Anything current: Chrome, Edge, Firefox and Safari, on desktop and on a phone. The
