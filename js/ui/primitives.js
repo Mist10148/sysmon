@@ -248,10 +248,6 @@ SM.ui = SM.ui || {};
       </div>`);
   }
 
-  function Skeleton(cls, style) {
-    return raw('<div class="' + cx('skeleton', cls) + '"' + attr('style', style) + '></div>');
-  }
-
   /* opts: { icon, title, desc, action } */
   function Empty(opts) {
     var o = opts || {};
@@ -275,6 +271,5 @@ SM.ui = SM.ui || {};
   SM.ui.Card = Card;
   SM.ui.PageHeader = PageHeader;
   SM.ui.StatTile = StatTile;
-  SM.ui.Skeleton = Skeleton;
   SM.ui.Empty = Empty;
 })();
