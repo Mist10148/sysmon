@@ -32,7 +32,8 @@ SM.ui = SM.ui || {};
     var cls = cx('btn', 'btn-' + (o.variant || 'default'),
                  o.size ? 'btn-' + o.size : '', o.cls);
     var inner =
-      (o.icon ? icon(o.icon, o.spinning ? 'spin' : '') : '') +
+      (o.spinning ? '<span class="spinner" aria-hidden="true"></span>'
+        : (o.icon ? icon(o.icon) : '')) +
       (o.label ? '<span>' + SM.dom.esc(o.label) + '</span>' : '') +
       (o.iconAfter ? icon(o.iconAfter) : '');
 
