@@ -403,7 +403,7 @@ SM.pages.settings = (function () {
       SM.ui.openAlert({
         title: 'Start again from the seed?',
         desc: 'Everything in this browser is deleted and the five original systems ' +
-              'and eight sites come back.',
+              'and sixteen sites come back.',
         confirmLabel: 'Delete and start again',
         tone: 'destructive',
         body: raw('<p class="warn-block">Every check, every edit and every activity ' +

@@ -48,7 +48,28 @@ SM.seed = (function () {
     '5\t5\t1\tSARA\t172.24.145.153\t11.2536\t123.0086\tRegion VI\tyes',
     '6\t6\t1\tPASSI\t172.24.144.38\t11.1078\t122.6417\tRegion VI\tyes',
     '7\t7\t1\tAKLAN\t172.24.142.42\t11.7086\t122.3661\tRegion VI\tyes',
-    '8\t8\t1\tGUIMARAS\t172.24.210.183\t10.5929\t122.5936\tRegion VI\tyes'
+    '8\t8\t1\tGUIMARAS\t172.24.210.183\t10.5929\t122.5936\tRegion VI\tyes',
+
+    /*
+      Two sites for each of the four HTTP systems.
+
+      Without these, Nclaims, Mcris, Pmais and Ipas were systems with nothing
+      in them: "Uptime by system" was a list of one entry, and the HTTP check
+      method the Systems editor offers had nothing in the seed showing it work.
+
+      Every address is distinct on purpose. The simulator is deterministic on
+      the site IP plus the seed salt, so two sites sharing an address would
+      produce byte-identical outage timing - the same site twice under two
+      names, which is worse than no data because it looks like a correlation.
+    */
+    '9\t9\t2\tILOILO CITY\t172.24.150.21\t10.7202\t122.5621\tRegion VI\tyes',
+    '10\t10\t2\tROXAS\t172.24.150.64\t11.5853\t122.7511\tRegion VI\tyes',
+    '11\t11\t3\tBACOLOD CITY\t172.24.151.31\t10.6407\t122.9689\tRegion VI\tyes',
+    '12\t12\t3\tSAN CARLOS\t172.24.151.77\t10.4926\t123.4152\tRegion VI\tyes',
+    '13\t13\t4\tKALIBO\t172.24.152.19\t11.7086\t122.3661\tRegion VI\tyes',
+    '14\t14\t4\tSILAY\t172.24.152.83\t10.7981\t122.9747\tRegion VI\tyes',
+    '15\t15\t5\tSAN JOSE\t172.24.153.44\t10.7402\t121.9391\tRegion VI\tyes',
+    '16\t16\t5\tESCALANTE\t172.24.153.90\t10.8403\t123.4995\tRegion VI\tyes'
   ].join('\r\n') + '\r\n';
 
   function text(table) {
