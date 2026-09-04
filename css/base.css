@@ -129,6 +129,24 @@ hr { border-top-width: 1px; }
 .noscript p { color: var(--ink-muted); }
 
 /*
+  The one animation in SysMon. Every loading affordance - the sweep button, the
+  export button, the checking toast - is the same 2px ring with one lit edge, so
+  there is a single keyframe rather than one per component.
+*/
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  flex: none;
+  display: inline-block;
+  border-radius: 999px;
+  border: 2px solid var(--hairline-strong);
+  border-top-color: currentColor;
+  animation: spin 0.8s linear infinite;
+}
+
+/*
   Someone who has asked for less motion has asked for less motion. Durations go
   to almost-nothing rather than to zero so that transitionend still fires and
   nothing waits forever on a callback that never arrives.

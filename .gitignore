@@ -10,3 +10,6 @@ desktop.ini
 # Exported data files land in Downloads, but if one is dragged in by mistake
 # it should not be committed over the samples in data/.
 /*.txt
+
+# Design source exported from Claude Design - 843KB of canvas runtime, not app code.
+SysMon Mockups (standalone).html
