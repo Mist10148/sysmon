@@ -446,6 +446,13 @@ SM.pages.locations = (function () {
                               desc: String(err && err.message || err) });
             });
           } },
+        /*
+          History already filters by site - the param has always been there,
+          nothing just ever built the link.
+        */
+        { label: 'View history', icon: 'table-properties', onSelect: function () {
+            SM.router.go('/history', { site: id });
+          } },
         { separator: true },
         { label: 'Remove', icon: 'trash-2', tone: 'destructive',
           onSelect: function () { confirmDelete(location); } }
