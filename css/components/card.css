@@ -22,25 +22,48 @@
 /* ---------- stat tile ---------- */
 
 .stat-tile {
-  border-radius: var(--radius-2xl);
-  padding: 0.875rem 1rem;
+  border-radius: var(--radius);
+  padding: 0.6875rem 0.75rem;
   min-width: 0;
 }
+
+/*
+  The label carries a dot in the same colour as the number it introduces.
+  Four tiles sit in a row and are read as a set, and the dots let the row be
+  scanned as a legend - green, red, grey, clay - before any digit is read.
+*/
 .stat-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+/* The tone class sits on the label so the dot can take it from currentColor;
+   the words stay muted regardless of which tone that is. */
+.stat-label-text { color: var(--ink-muted); }
+.stat-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: currentColor;
 }
 .stat-value {
-  margin-top: 0.25rem;
-  font-size: 20px;
+  margin-top: 0.375rem;
+  font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 .stat-hint { margin-top: 0.1rem; font-size: 11px; color: var(--ink-muted); }
+
+@media (min-width: 768px) {
+  .stat-tile { padding: 0.875rem 1rem; }
+  .stat-label { font-size: 12px; }
+  .stat-value { margin-top: 0.5rem; font-size: 27px; letter-spacing: -0.025em; }
+}
 
 /* ---------- status card ---------- */
 /*
@@ -49,22 +72,30 @@
   why it is a button rather than a div - clicking it selects the pin.
 */
 
+/*
+  A card at rest, not only once selected. In the floating rail these sit on
+  blurred glass, where a transparent-until-hover row had no edge of its own
+  and the list read as one long smear.
+*/
 .status-card {
   display: block;
   width: 100%;
   text-align: left;
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius);
   padding: 0.625rem 0.75rem;
-  border: 1px solid transparent;
-  transition: background-color 160ms var(--ease-spring), box-shadow 160ms var(--ease-spring),
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-contact);
+  transition: border-color 160ms var(--ease-spring), box-shadow 160ms var(--ease-spring),
               transform 120ms var(--ease-spring);
 }
-.status-card:hover { background: color-mix(in srgb, var(--surface) 55%, transparent); }
+.status-card:hover { border-color: var(--hairline-strong); }
 .status-card:active { transform: scale(0.99); }
+
+/* Selected takes the accent edge and lifts, rather than changing fill. */
 .status-card[data-selected="true"] {
-  background: var(--surface);
-  box-shadow: var(--shadow-contact);
-  border-color: var(--hairline-strong);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-ambient);
 }
 .status-card-top {
   display: flex;
@@ -73,7 +104,7 @@
   gap: 0.5rem;
 }
 .status-card-name {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   letter-spacing: -0.011em;
   overflow: hidden;
@@ -87,13 +118,17 @@
   gap: 0.375rem;
   margin-top: 0.35rem;
 }
+/*
+  The reading is a sentence - "4 of 4 packets lost", "31 ms - 0% loss" - so it
+  is set in the text face. Only the address above it is monospaced, because an
+  address is something you compare character by character.
+*/
 .status-card-numbers {
   margin-top: 0.3rem;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-muted);
+  font-size: 12.5px;
+  color: var(--ink);
 }
-.status-card-time { font-size: 11px; color: var(--ink-faint); margin-top: 0.15rem; }
+.status-card-time { font-size: 11.5px; color: var(--ink-faint); margin-top: 0.15rem; }
 
 /* ---------- empty state ---------- */
 

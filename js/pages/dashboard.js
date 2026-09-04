@@ -179,8 +179,8 @@ SM.pages.dashboard = (function () {
             </div>
             <aside class="rail glass" aria-label="Targets">
               <div class="rail-head">
-                <span>Targets</span>
-                <span id="d-rail-count">0</span>
+                <span>Targets &mdash; <span id="d-rail-count">0</span></span>
+                <span class="rail-head-hint">tap a card to pin it</span>
               </div>
               <div class="rail-list" id="d-rail-list"></div>
             </aside>

@@ -227,8 +227,11 @@ SM.ui = SM.ui || {};
     var o = opts || {};
     var toneClass = o.tone ? 'text-' + o.tone : '';
     return raw(html`
-      <div class="stat-tile glass">
-        <div class="stat-label">${o.label}</div>
+      <div class="stat-tile surface-card">
+        <div class="${cx('stat-label', toneClass)}">
+          ${o.tone ? raw('<span class="stat-dot"></span>') : ''}
+          <span class="stat-label-text">${o.label}</span>
+        </div>
         <div class="${cx('stat-value', toneClass)}">${o.value}</div>
         ${o.hint ? raw('<div class="stat-hint">' + SM.dom.esc(o.hint) + '</div>') : ''}
       </div>`);

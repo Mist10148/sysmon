@@ -236,7 +236,9 @@ SM.map = (function () {
     return '<span class="sysmon-pin' + (busy ? ' sysmon-pin-pulse' : '') + '"' +
       ' data-status="' + SM.dom.esc(row.status) + '"' +
       ' data-sys="' + SM.dom.esc(row.system_type_color || 'slate') + '"' +
-      ' data-selected="' + (selected ? 'true' : 'false') + '">' + initial + '</span>';
+      ' data-selected="' + (selected ? 'true' : 'false') + '">' +
+      /* The pin is rotated onto its point; the initial rotates back. */
+      '<span class="sysmon-pin-initial">' + initial + '</span></span>';
   }
 
   function popupHtml(row) {

@@ -87,15 +87,15 @@
 }
 .rail-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 10px;
+  gap: 0.5rem;
+  font-size: 13.5px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  padding: 0 0.25rem;
+  color: var(--ink);
+  padding: 0 0.25rem 0.125rem;
 }
+.rail-head-hint { font-size: 11.5px; font-weight: 400; color: var(--ink-faint); }
 .rail-list { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
 
 /* Below 768px: one column of cards under the map. */
@@ -112,8 +112,8 @@
     align-content: start;
     max-height: 560px;
     overflow-y: auto;
-    border-radius: var(--radius-3xl);
-    padding: 0.75rem;
+    border-radius: var(--radius-xl);
+    padding: 0.875rem;
     background: var(--glass-bg);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
     backdrop-filter: blur(var(--glass-blur)) saturate(180%);
@@ -132,7 +132,7 @@
     top: 0.75rem;
     right: 0.75rem;
     bottom: 0.75rem;
-    width: var(--rail-w);
+    width: 21.625rem;
     max-height: none;
     z-index: 600;
     box-shadow: var(--shadow-float);
@@ -192,36 +192,49 @@
 
 /* ---------- the pin ---------- */
 
+/*
+  A teardrop, not a disc. On a map a circle is a data point that happens to be
+  here; the pointed corner is what says "this is a place". The shape is a
+  square with three round corners rotated onto its point, which is also why
+  the initial inside has to be rotated back.
+*/
 .sysmon-pin {
   display: grid;
   place-items: center;
   position: relative;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  border: 2.5px solid var(--surface);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.28);
-  font-size: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 3.5px solid var(--unknown);
+  outline: 1.5px solid var(--surface);
+  box-shadow: var(--shadow-contact);
+  font-size: 9px;
   font-weight: 700;
   color: #fff;
-  transition: transform 240ms var(--ease-spring);
+  transition: transform 240ms var(--ease-spring), box-shadow 240ms var(--ease-spring);
 }
+.sysmon-pin-initial { transform: rotate(45deg); line-height: 1; }
 .sysmon-pin[data-status="Functional"] { background: #3b9e63; }
 .sysmon-pin[data-status="Restored"] { background: #d9a13b; }
 .sysmon-pin[data-status="Down"] { background: #c8483c; }
 .sysmon-pin[data-status="Unknown"] { background: #8a8782; }
 
-/* The collar is the system's identity colour, drawn outside the white ring. */
-.sysmon-pin[data-sys] { box-shadow: 0 0 0 3px var(--sys), 0 2px 6px rgb(0 0 0 / 0.28); }
+/* Body is health, collar is the system. The two never trade places. */
+.sysmon-pin[data-sys] { border-color: var(--sys); }
 
-.sysmon-pin[data-selected="true"] { transform: scale(1.28); z-index: 500; }
+.sysmon-pin[data-selected="true"] {
+  transform: rotate(-45deg) scale(1.31);
+  box-shadow: var(--shadow-ambient);
+  z-index: 500;
+}
 
 /* Pulses while a sweep is in flight, so it is obvious which sites are busy. */
 .sysmon-pin-pulse::after {
   content: "";
   position: absolute;
   inset: -6px;
-  border-radius: 999px;
+  border-radius: inherit;
   border: 2px solid currentColor;
   color: inherit;
   opacity: 0.55;
