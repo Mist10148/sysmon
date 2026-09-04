@@ -2,9 +2,10 @@
   Badges and the status card.
 
   The rule these enforce: colour is never the only thing carrying meaning. Every
-  status badge has a word in it and every system badge has its name in it, both
-  because three of the light system colours fall under a 3:1 contrast ratio
-  against their own fill, and because a printed monitoring form is grey.
+  status badge has a word in it and every system badge has its name in it,
+  because a printed monitoring form is grey. The system badge goes further and
+  keeps its identity colour in a dot rather than in the text, since three of
+  the light system colours fall under 3:1 against a tint of themselves.
 */
 window.SM = window.SM || {};
 SM.ui = SM.ui || {};
@@ -52,7 +53,9 @@ SM.ui = SM.ui || {};
   function FunctionalMark(on) {
     return raw('<span class="functional-mark" data-on="' + (on ? 'true' : 'false') +
       '" role="img" aria-label="' + (on ? 'Functional' : 'Not functional') + '">' +
-      (on ? '&#10003;' : '&#10007;') + '</span>');
+      (on ? '&#10003;' : '&#10007;') +
+      '<span class="functional-word" aria-hidden="true">' + (on ? 'Yes' : 'No') + '</span>' +
+      '</span>');
   }
 
   /*
@@ -125,7 +128,7 @@ SM.ui = SM.ui || {};
   function ActivityBadge(row) {
     var name = ACTIVITY_ICONS[row.action] || 'info';
     return raw('<span class="act-badge" data-sev="' + SM.dom.esc(row.severity) + '">' +
-      SM.dom.icon(name, 'icon-sm') + '</span>');
+      SM.dom.icon(name) + '</span>');
   }
 
   SM.ui.StatusBadge = StatusBadge;

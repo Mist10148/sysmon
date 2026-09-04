@@ -5,25 +5,34 @@
   and system identity (the eight --sys-* colours). A blue system is not a
   healthy one, so the two never share a colour or a shape.
 
-  Every badge carries text as well as colour. Three of the light system colours
-  fall under 3:1 against their soft fill, so colour alone is never the cue.
+  Health badges are the only ones that carry a hue in their fill. A system
+  badge is neutral - sunken fill, hairline, full-strength ink - and puts its
+  identity colour into a 7px dot instead. That is deliberate: three of the
+  light system colours fall under 3:1 against a tint of themselves, so the
+  name was hard to read in exactly the badge that exists to name the system.
+  As a dot, the colour is decoration next to legible text rather than the
+  thing the text has to survive.
+
+  Every badge still carries a word as well as a colour: a printed monitoring
+  form is grey.
 */
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  border-radius: 999px;
-  padding: 0.15rem 0.5rem;
-  font-size: 12px;
-  font-weight: 500;
+  gap: 0.375rem;
+  height: 1.375rem;
+  padding-inline: 0.5625rem;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 600;
   white-space: nowrap;
 }
-.badge-sm { padding: 0.05rem 0.45rem; font-size: 11px; }
+.badge-sm { height: 1.25rem; padding-inline: 0.5rem; font-size: 11px; }
 
 .badge-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   flex: none;
   border-radius: 999px;
   background: currentColor;
@@ -36,25 +45,33 @@
 .badge[data-status="Down"] { background: var(--down-soft); color: var(--down); }
 .badge[data-status="Unknown"] { background: var(--unknown-soft); color: var(--unknown); }
 
-/* The History form's tick or cross. */
+/*
+  The History form's tick or cross. A bare glyph with the word under it, not a
+  chip: the column is already narrow, and a filled circle there competed with
+  the status badge two columns over for the same "this is the health" reading.
+*/
 .functional-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.1;
+  font-size: 15px;
+  font-weight: 600;
 }
-.functional-mark[data-on="true"] { background: var(--ok-soft); color: var(--ok); }
-.functional-mark[data-on="false"] { background: var(--down-soft); color: var(--down); }
+.functional-mark[data-on="true"] { color: var(--ok); }
+.functional-mark[data-on="false"] { color: var(--down); }
+.functional-mark .functional-word {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--ink-faint);
+}
 
 /* ---------- system identity ---------- */
 
 .sys-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   flex: none;
   border-radius: 999px;
 }
@@ -62,18 +79,18 @@
 .badge-sys {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  border-radius: 999px;
-  padding: 0.05rem 0.5rem;
-  font-size: 11px;
+  gap: 0.375rem;
+  height: 1.375rem;
+  padding-inline: 0.5625rem;
+  border-radius: var(--radius-sm);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  font-size: 11.5px;
   font-weight: 500;
   white-space: nowrap;
 }
 
-/*
-  One block per colour rather than a computed mix, because the soft fill is a
-  12% tint of the identity colour and the text is the colour at full strength.
-*/
 [data-sys="blue"] { --sys: var(--sys-blue); }
 [data-sys="orange"] { --sys: var(--sys-orange); }
 [data-sys="teal"] { --sys: var(--sys-teal); }
@@ -84,19 +101,12 @@
 [data-sys="slate"] { --sys: var(--sys-slate); }
 
 .sys-dot[data-sys] { background: var(--sys); }
-.badge-sys[data-sys] {
-  background: color-mix(in srgb, var(--sys) 12%, transparent);
-  color: var(--sys);
-}
-.dark .badge-sys[data-sys] {
-  background: color-mix(in srgb, var(--sys) 18%, transparent);
-}
 
 /* ---------- system-type filter chips ---------- */
 
 .chips {
   display: flex;
-  gap: 0.375rem;
+  gap: 0.5rem;
   overflow-x: auto;
   padding-bottom: 0.25rem;
   scrollbar-width: none;
@@ -106,42 +116,61 @@
   .chips { flex-wrap: wrap; overflow: visible; }
 }
 
+/*
+  Chips keep the pill the buttons gave up - they are filters, not commands,
+  and now that the two shapes differ the distinction carries itself.
+
+  The selected chip inverts to solid ink rather than lifting on a shadow. On
+  the Dashboard the chip row sits directly above the stat tiles, and a raised
+  white chip was reading as another tile.
+*/
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.4375rem;
   flex: none;
-  height: 2rem;
-  padding-inline: 0.75rem;
+  height: 2.125rem;
+  padding-inline: 0.875rem;
   border-radius: 999px;
   border: 1px solid var(--hairline);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink-muted);
-  transition: background-color 160ms var(--ease-spring), color 160ms var(--ease-spring);
-}
-.chip:hover { color: var(--ink); }
-.chip[aria-pressed="true"] {
   background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink);
-  border-color: var(--hairline-strong);
-  box-shadow: var(--shadow-contact);
+  transition: background-color 160ms var(--ease-spring), color 160ms var(--ease-spring),
+              border-color 160ms var(--ease-spring);
+}
+.chip:hover:not([aria-pressed="true"]) { background: var(--sunken); }
+.chip[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--canvas);
+  border-color: var(--ink);
+  font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .chip { height: 1.875rem; padding-inline: 0.8125rem; font-size: 12.5px; }
 }
 
 /* ---------- activity feed severity badge ---------- */
 
+/*
+  A tone-soft medallion rather than a neutral one. The activity feed is read
+  by scrolling, and the severity has to survive peripheral vision - the icon
+  alone did not.
+*/
 .act-badge {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   flex: none;
   border-radius: 999px;
-  background: var(--sunken);
-  box-shadow: inset 0 0 0 1px var(--hairline);
+  background: var(--unknown-soft);
+  color: var(--ink-muted);
 }
-.act-badge[data-sev="critical"] { color: var(--down); }
-.act-badge[data-sev="warning"] { color: var(--warn-ink); }
-.act-badge[data-sev="success"] { color: var(--ok); }
-.act-badge[data-sev="info"] { color: var(--ink-muted); }
+.act-badge .icon { width: 1.0625rem; height: 1.0625rem; }
+.act-badge[data-sev="critical"] { background: var(--down-soft); color: var(--down); }
+.act-badge[data-sev="warning"] { background: var(--warn-soft); color: var(--warn-ink); }
+.act-badge[data-sev="success"] { background: var(--ok-soft); color: var(--ok); }
+.act-badge[data-sev="info"] { background: var(--sunken); color: var(--ink-muted); }
