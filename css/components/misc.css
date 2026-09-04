@@ -132,29 +132,51 @@
 
 /* ---------- activity feed ---------- */
 
+/*
+  A solid sunken bar rather than a blurred wash of the canvas. It is sticky,
+  so it spends most of its life with rows sliding under it, and a translucent
+  heading over a moving list was legible only between rows.
+*/
 .day-heading {
   position: sticky;
   top: var(--topbar-h);
   z-index: 5;
-  padding: 0.5rem 0.25rem;
-  font-size: 12px;
+  margin-inline: -0.25rem;
+  padding: 0.5625rem 1rem;
+  font-size: 11.5px;
   font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--ink-muted);
-  background: color-mix(in srgb, var(--canvas) 85%, transparent);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--hairline);
+  background: var(--sunken);
+  border-block: 1px solid var(--hairline);
 }
 
 .act-row {
   display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
-  padding: 0.625rem 0.25rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.25rem;
   border-bottom: 1px solid var(--hairline);
 }
-.act-subject { font-size: 13px; font-weight: 500; }
-.act-detail { font-size: 12px; color: var(--ink-muted); margin-top: 1px; }
-.act-sys { display: none; align-items: center; gap: 0.3rem; font-size: 11px; color: var(--ink-muted); }
-@media (min-width: 640px) { .act-sys { display: inline-flex; } }
-.act-time { font-size: 11px; color: var(--ink-faint); white-space: nowrap; margin-left: auto; }
+.act-body { min-width: 0; flex: 1; }
+.act-subject { font-size: 13.5px; font-weight: 600; }
+.act-detail { font-size: 12.5px; color: var(--ink-muted); margin-top: 1px; }
+.act-sys { display: none; align-items: center; gap: 0.3rem; }
+.act-time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/*
+  Once there is room, the subject and its detail share a line. The feed is
+  read by scanning down the left edge for what happened, and two lines per
+  entry doubled the distance between one event and the next.
+*/
+@media (min-width: 640px) {
+  .act-sys { display: inline-flex; }
+  .act-body { display: flex; align-items: baseline; gap: 0.5rem; }
+  .act-detail { margin-top: 0; }
+}

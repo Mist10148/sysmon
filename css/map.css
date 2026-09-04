@@ -24,7 +24,7 @@
 
 .map-shell {
   position: relative;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-2xl);
   overflow: hidden;
   border: 1px solid var(--hairline);
   box-shadow: var(--shadow-contact), var(--shadow-ambient);

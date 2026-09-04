@@ -3,7 +3,7 @@
 */
 
 .card {
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius);
   min-width: 0;
 }
 .card-head { padding: 1.25rem 1.25rem 0.75rem; }

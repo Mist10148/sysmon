@@ -97,8 +97,9 @@ SM.pages.dashboard = (function () {
         title: 'Dashboard',
         desc: lastSweep
           ? 'Last sweep ' + SM.fmt.relative(lastSweep) + ' · every active site, ' +
-            'every system' + simulatedNote(all)
+            'every system'
           : 'Nothing checked yet · press Check All Now to start',
+        provenance: simulatedNote(all),
         actions: raw(
           SM.ui.Segmented({
             act: 'set-view', value: s.mode, size: 'sm', ariaLabel: 'Map or list',
@@ -220,8 +221,8 @@ SM.pages.dashboard = (function () {
         if (rows[i].source === 'sim') sim++;
       }
       if (!sim) return '';
-      if (sim === checked) return ' · simulated, not measured';
-      return ' · ' + sim + ' of ' + checked + ' simulated';
+      if (sim === checked) return 'simulated, not measured';
+      return sim + ' of ' + checked + ' simulated';
     }
 
     /* ---------- the sweep ---------- */

@@ -210,13 +210,24 @@ SM.ui = SM.ui || {};
       </section>`);
   }
 
+  /*
+    opts: { title, desc, provenance, actions }
+
+    `provenance` is where the numbers on the page came from. It is a
+    separate field rather than more of `desc` because it is set one step
+    fainter: it has to be there every time without being the loudest thing in
+    the header.
+  */
   function PageHeader(opts) {
     var o = opts || {};
     return raw(html`
       <header class="page-header">
         <div class="min-w-0">
           <h1>${o.title}</h1>
-          ${o.desc ? raw('<p class="page-header-desc">' + SM.dom.esc(o.desc) + '</p>') : ''}
+          ${o.desc ? raw('<p class="page-header-desc">' + SM.dom.esc(o.desc) +
+                        (o.provenance
+                          ? '<span class="provenance"> · ' + SM.dom.esc(o.provenance) + '</span>'
+                          : '') + '</p>') : ''}
         </div>
         ${o.actions ? raw('<div class="page-header-actions">' + o.actions.__html + '</div>') : ''}
       </header>`);

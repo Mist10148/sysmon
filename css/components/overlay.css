@@ -34,7 +34,7 @@ dialog.dialog::backdrop {
   flex-direction: column;
   max-height: 92dvh;
   overflow-y: auto;
-  border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   padding: 1.25rem;
   padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
   animation: sysmon-sheet 320ms var(--ease-spring);
@@ -77,7 +77,7 @@ dialog.dialog {
   }
   dialog.dialog[data-size="md"] { width: min(28rem, calc(100vw - 2rem)); }
   .dialog-panel {
-    border-radius: var(--radius-3xl);
+    border-radius: var(--radius);
     padding: 1.5rem;
     max-height: 86dvh;
     animation: sysmon-pop-in 180ms var(--ease-spring);

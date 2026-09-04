@@ -139,7 +139,7 @@ SM.pages.activity = (function () {
       return html`
         <div class="act-row">
           ${SM.ui.ActivityBadge(entry)}
-          <div class="min-w-0 flex-1">
+          <div class="act-body">
             <div class="act-subject">${entry.subject}</div>
             ${entry.detail ? raw('<div class="act-detail">' + SM.dom.esc(entry.detail) + '</div>') : ''}
           </div>

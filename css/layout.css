@@ -96,16 +96,23 @@
 }
 
 @media (min-width: 1024px) {
+  /*
+    Flush, not floating. As a drawer it is a panel that slid in over the page
+    and an island is the right read; as a permanent column it is part of the
+    window, and the 0.75rem gutter around it was a seam the eye kept finding.
+    Only the right edge keeps a border.
+  */
   .sidebar {
     position: sticky;
     top: 0;
     height: 100dvh;
-    margin: 0.75rem 0 0.75rem 0.75rem;
+    margin: 0;
     inset-block: auto;
-    border-radius: var(--radius-3xl);
+    border-radius: 0;
+    border-width: 0 1px 0 0;
+    box-shadow: none;
     transform: none;
     transition: none;
-    height: calc(100dvh - 1.5rem);
   }
   .scrim { display: none; }
 }
