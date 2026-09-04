@@ -132,10 +132,42 @@ SM.queries = (function () {
     });
   }
 
+  /*
+    The last SPARK_N latency readings per site, oldest first.
+
+    One walk of the checks array rather than a history() call per card: the
+    dashboard draws one of these per site, and per-card queries would turn a
+    render into N scans of the same array.
+
+    Only successful checks carry a latency - sweep.buildRow nulls it when the
+    check failed - so the nulls are dropped here rather than at the drawing
+    end. That means a gap in the line is a failure, and the line itself is
+    only ever real measurements.
+  */
+  var SPARK_N = 24;
+
+  function recentByLocation() {
+    return memo('recentByLocation', [SM.store.rev('checks')], function () {
+      var out = {};
+      var list = SM.store.get().checks;
+      /* Ascending checked_at, so pushing in order and trimming the front
+         from the end leaves the most recent SPARK_N in order. */
+      for (var i = 0; i < list.length; i++) {
+        var row = list[i];
+        if (row.avg_latency_ms == null) continue;
+        var bucket = out[row.location_id] || (out[row.location_id] = []);
+        bucket.push(row.avg_latency_ms);
+        if (bucket.length > SPARK_N) bucket.shift();
+      }
+      return out;
+    });
+  }
+
   /* One row per active site, with its latest result folded in. */
   function currentStatus(options) {
     var opts = options || {};
     var latest = latestByLocation();
+    var recent = recentByLocation();
     return locations({ systemTypeId: opts.systemTypeId }).map(function (loc) {
       var check = latest[loc.id] || null;
       loc.latest = check;
@@ -145,6 +177,7 @@ SM.queries = (function () {
       loc.loss_pct = check ? check.loss_pct : null;
       loc.http_status = check ? check.http_status : null;
       loc.source = check ? check.source : null;
+      loc.recent = recent[loc.id] || null;
       return loc;
     });
   }
@@ -322,7 +355,8 @@ SM.queries = (function () {
   return {
     systemTypes: systemTypes, systemById: systemById, targetCounts: targetCounts,
     locations: locations, locationById: locationById, decorateLocation: decorateLocation,
-    latestByLocation: latestByLocation, currentStatus: currentStatus, summary: summary,
+    latestByLocation: latestByLocation, recentByLocation: recentByLocation,
+    currentStatus: currentStatus, summary: summary,
     lastSweepAt: lastSweepAt, history: history, checkById: checkById,
     decorateCheck: decorateCheck,
     activity: activity, groupByDay: groupByDay,

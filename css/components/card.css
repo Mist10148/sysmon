@@ -123,10 +123,35 @@
   address is something you compare character by character.
 */
 .status-card-numbers {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
   margin-top: 0.3rem;
   font-size: 12.5px;
   color: var(--ink);
 }
+
+/*
+  The trend line sits beside the reading it belongs to. Muted, thin and small:
+  the figure to its left is the measurement, and this only has to answer
+  whether that figure is normal for this site.
+*/
+.spark {
+  width: 4rem;
+  height: 1rem;
+  flex: none;
+  overflow: visible;
+}
+.spark-line {
+  fill: none;
+  stroke: var(--ink-faint);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.status-card[data-selected="true"] .spark-line { stroke: var(--accent); }
 .status-card-time { font-size: 11.5px; color: var(--ink-faint); margin-top: 0.15rem; }
 
 /* ---------- empty state ---------- */

@@ -59,6 +59,43 @@ SM.ui = SM.ui || {};
   }
 
   /*
+    The latency trend behind one target, as a bare polyline.
+
+    Deliberately unlabelled and unscaled against anything but itself: the card
+    already prints the current reading in figures, and this is here to answer
+    "is that number normal for this site" - a shape, not a second measurement.
+    Drawn by hand for the same reason the Analytics chart is: it is a dozen
+    lines of arithmetic, and a charting library would be several hundred KB.
+  */
+  var SPARK_W = 64;
+  var SPARK_H = 16;
+
+  function sparkline(values) {
+    if (!values || values.length < 3) return '';
+
+    var lo = Math.min.apply(null, values);
+    var hi = Math.max.apply(null, values);
+    /* A flat line is a real answer; without this it would divide by zero. */
+    var span = hi - lo || 1;
+    var step = SPARK_W / (values.length - 1);
+
+    var d = '';
+    for (var i = 0; i < values.length; i++) {
+      var x = (i * step).toFixed(1);
+      var y = (SPARK_H - ((values[i] - lo) / span) * SPARK_H).toFixed(1);
+      d += (i ? ' L' : 'M') + x + ' ' + y;
+    }
+
+    /*
+      aria-hidden and focusable="false": the card is a button, and this is
+      decoration on top of a figure that is already written out in text.
+    */
+    return '<svg class="spark" viewBox="0 0 ' + SPARK_W + ' ' + SPARK_H +
+      '" preserveAspectRatio="none" aria-hidden="true" focusable="false">' +
+      '<path class="spark-line" d="' + d + '"/></svg>';
+  }
+
+  /*
     One target, as it appears in the dashboard list and in the map rail. A
     button rather than a div, because clicking it selects the matching pin.
 
@@ -88,7 +125,10 @@ SM.ui = SM.ui || {};
           ${SystemBadge(row)}
           <span class="text-11 text-faint mono">${row.ip}</span>
         </div>
-        <div class="status-card-numbers">${numbers}</div>
+        <div class="status-card-numbers">
+          <span>${numbers}</span>
+          ${raw(sparkline(row.recent))}
+        </div>
         <div class="status-card-time">${row.checked_at ? SM.fmt.relative(row.checked_at) : ''}</div>
       </button>`);
   }
