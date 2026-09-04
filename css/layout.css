@@ -47,12 +47,16 @@
 
 .app-root { min-height: 100dvh; }
 
+/*
+  The frame fills the window. It used to stop at 1600px and centre, which on
+  anything wider than that spent the extra pixels on empty canvas either side -
+  and this is a status board, where the map and the tables are the reason to
+  have a wide screen in the first place.
+*/
 .app-frame {
   display: flex;
   min-height: 100dvh;
   width: 100%;
-  max-width: 1600px;
-  margin-inline: auto;
 }
 
 .main {
