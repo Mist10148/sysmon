@@ -88,6 +88,13 @@
 
 .setting-rows { display: flex; flex-direction: column; gap: 0.875rem; }
 
+/* Two verbs in one card that must not be mistaken for each other. */
+.setting-divider {
+  height: 1px;
+  margin: 0.25rem 0;
+  background: var(--hairline);
+}
+
 .status-box {
   border-radius: var(--radius-sm);
   background: var(--sunken);

@@ -251,6 +251,24 @@ SM.pages.settings = (function () {
               Export writes five .txt files you can read in Notepad. Import replaces
               whatever tables the files you choose contain, and leaves the rest alone.
             </p>
+
+            <div class="setting-divider"></div>
+
+            <div class="switch-row-label">Sites as a spreadsheet</div>
+            <div class="flex flex-wrap gap-2">
+              ${SM.ui.Button({ label: 'Export sites CSV', icon: 'table-2',
+                               variant: 'secondary', act: 'export-sites' })}
+              ${SM.ui.Button({ label: 'Import sites CSV', icon: 'upload',
+                               variant: 'secondary', act: 'import-sites' })}
+            </div>
+
+            <input type="file" class="file-input" id="sites-input" accept=".csv,text/csv">
+
+            <p class="field-hint">
+              A different verb from Import above: this one adds sites and updates the
+              ones already here, matching on name and system. It never removes
+              anything. Export first if you want the column headings.
+            </p>
           </div>`)
       }).__html;
     }
@@ -346,6 +364,41 @@ SM.pages.settings = (function () {
       });
     }
 
+    /*
+      The sites CSV flow. Same two-phase shape as runImport - inspect, show
+      exactly what will happen, then apply - but the confirm is not destructive,
+      because this verb only ever adds and updates.
+    */
+    function runSitesImport(file) {
+      SM.sitesCsv.inspect(file).then(function (result) {
+        var lines = [];
+        if (result.adds.length) lines.push(SM.fmt.plural(result.adds.length, 'new site') + ' added');
+        if (result.updates.length) lines.push(result.updates.length + ' existing updated');
+
+        SM.ui.openAlert({
+          title: 'Import sites from ' + file.name + '?',
+          confirmLabel: 'Import sites',
+          body: SM.dom.raw(
+            '<p>' + SM.dom.esc(lines.join(' · ')) + '</p>' +
+            '<p class="field-hint">Nothing is removed. Sites you did not list are left alone.</p>' +
+            (result.warnings.length
+              ? '<div class="warn-block">' + result.warnings.map(function (w) {
+                  return '<p>' + SM.dom.esc(w) + '</p>';
+                }).join('') + '</div>'
+              : '')),
+          onConfirm: function (api) {
+            var summary = SM.sitesCsv.apply(result);
+            SM.storage.flush();
+            api.close();
+            SM.toast.success('Sites imported', summary + '.');
+            update();
+          }
+        });
+      }, function (err) {
+        SM.toast.error('Could not import sites', String(err && err.message || err));
+      });
+    }
+
     function confirmReset() {
       SM.ui.openAlert({
         title: 'Start again from the seed?',
@@ -428,6 +481,20 @@ SM.pages.settings = (function () {
     ctx.onCleanup(SM.dom.delegate(root, 'change', '#import-input', function (e, node) {
       if (node.files && node.files.length) runImport(node.files);
       node.value = '';   /* so choosing the same file twice fires again */
+    }));
+
+    ctx.onCleanup(SM.dom.delegate(root, 'click', '[data-act="export-sites"]', function () {
+      SM.sitesCsv.exportSites();
+    }));
+
+    ctx.onCleanup(SM.dom.delegate(root, 'click', '[data-act="import-sites"]', function () {
+      var input = SM.dom.qs('#sites-input', root);
+      if (input) input.click();
+    }));
+
+    ctx.onCleanup(SM.dom.delegate(root, 'change', '#sites-input', function (e, node) {
+      if (node.files && node.files.length) runSitesImport(node.files[0]);
+      node.value = '';
     }));
 
     ctx.onCleanup(SM.dom.delegate(root, 'click', '[data-act="reset-data"]', confirmReset));
