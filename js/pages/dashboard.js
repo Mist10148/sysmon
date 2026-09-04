@@ -149,6 +149,7 @@ SM.pages.dashboard = (function () {
               }).join('')
             : '<p class="text-12 text-muted p-3">No sites match.</p>';
         }
+        updateRailFoot();
         if (mapHandle) mapHandle.setRows(placed, busyIds);
       } else {
         var cards = SM.dom.qs('#d-cards', elBody);
@@ -188,8 +189,19 @@ SM.pages.dashboard = (function () {
                 <span class="rail-head-hint">tap a card to pin it</span>
               </div>
               <div class="rail-list" id="d-rail-list"></div>
+              <p class="rail-foot" id="d-rail-foot" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                <span id="d-rail-foot-text"></span>
+              </p>
             </aside>
           </div>`;
+        /*
+          Bound on the freshly built rail. buildBody replaces the node, so the
+          old listener goes with it; ctx.signal only has to catch the last one.
+        */
+        var rail = SM.dom.qs('.rail', elBody);
+        if (rail) rail.addEventListener('scroll', updateRailFoot, { passive: true, signal: ctx.signal });
+
         mapHandle = SM.map.create(SM.dom.qs('#map-canvas', elBody), {
           onSelect: function (id) { selectTarget(id, false); }
         });
@@ -227,6 +239,38 @@ SM.pages.dashboard = (function () {
       if (!sim) return '';
       if (sim === checked) return 'simulated, not measured';
       return sim + ' of ' + checked + ' simulated';
+    }
+
+    /*
+      How many target cards are below the fold.
+
+      The rail is only a scroll container from 1024px up; under that the cards
+      simply stack down the page and there is no fold to be below, which is why
+      the footer is display:none there and this returns early on a rail that is
+      not overflowing.
+
+      Counting is deliberately by card geometry rather than by dividing the
+      scroll height: the cards are not all the same height once a site name
+      wraps, and a wrong count is worse than no count.
+    */
+    function updateRailFoot() {
+      var rail = SM.dom.qs('.rail', elBody);
+      var foot = SM.dom.qs('#d-rail-foot', elBody);
+      var text = SM.dom.qs('#d-rail-foot-text', elBody);
+      if (!rail || !foot || !text) return;
+
+      var slack = rail.scrollHeight - rail.clientHeight;
+      if (slack <= 2) { foot.hidden = true; return; }
+
+      var limit = rail.scrollTop + rail.clientHeight;
+      var cards = SM.dom.qsa('.status-card', rail);
+      var below = 0;
+      for (var i = 0; i < cards.length; i++) {
+        if (cards[i].offsetTop + cards[i].offsetHeight > limit + 2) below++;
+      }
+
+      foot.hidden = below === 0;
+      if (below) text.textContent = below + ' more below — scroll the rail';
     }
 
     /* ---------- the sweep ---------- */
@@ -321,6 +365,9 @@ SM.pages.dashboard = (function () {
     /* A scheduled sweep, or an edit made on another page. */
     ctx.onCleanup(SM.store.subscribe(['checks', 'locations', 'system_types'], update,
       { signal: ctx.signal }));
+
+    /* Whether the rail scrolls at all changes at 1024px and again at 1280px. */
+    window.addEventListener('resize', updateRailFoot, { passive: true, signal: ctx.signal });
 
     /*
       "Last sweep 3m ago" has to keep counting, or a dashboard left open all

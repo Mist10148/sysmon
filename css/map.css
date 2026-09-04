@@ -120,6 +120,35 @@
 .rail-head-hint { font-size: 11.5px; font-weight: 400; color: var(--ink-faint); }
 .rail-list { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
 
+/*
+  Hidden by default and shown only from 1024px, because that is the first width
+  at which the rail is a scroll container - below it the cards just stack down
+  the page and there is no fold for anything to be below.
+
+  Sticky, or it would sit at the bottom of the scrolled content where it can
+  never be seen. The fill is opaque rather than the glass tint: it overlaps the
+  cards it is describing, and a translucent strip over a scrolling list is
+  unreadable in exactly the moment it matters.
+*/
+.rail-foot {
+  display: none;
+  position: sticky;
+  bottom: 0;
+  align-items: center;
+  gap: 0.4375rem;
+  margin-top: -0.25rem;
+  padding: 0.5rem 0.25rem 0.125rem;
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border-top: 1px solid var(--hairline);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+.rail-foot .icon { width: 0.875rem; height: 0.875rem; }
+.rail-foot[hidden] { display: none; }
+
 /* Below 768px: one column of cards under the map. */
 /* 768-1023px: two columns of cards under the map. */
 @media (min-width: 768px) {
@@ -143,6 +172,7 @@
     box-shadow: var(--shadow-contact), var(--shadow-ambient);
   }
   .rail-list { display: flex; }
+  .rail-foot:not([hidden]) { display: flex; }
 }
 
 /* 1280px and up: floating over the map. */
