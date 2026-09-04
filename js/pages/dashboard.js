@@ -177,6 +177,10 @@ SM.pages.dashboard = (function () {
             <div class="map-shell">
               <div class="map-canvas" id="map-canvas" role="application"
                    aria-label="Map of monitored sites"></div>
+              <div class="map-legend">
+                <span class="map-legend-place">Western Visayas &middot; Region VI</span>
+                <span class="map-legend-key">pin body = health &middot; collar = system</span>
+              </div>
             </div>
             <aside class="rail glass" aria-label="Targets">
               <div class="rail-head">

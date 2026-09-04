@@ -239,9 +239,9 @@ SM.ui = SM.ui || {};
     var toneClass = o.tone ? 'text-' + o.tone : '';
     return raw(html`
       <div class="stat-tile surface-card">
-        <div class="${cx('stat-label', toneClass)}">
-          ${o.tone ? raw('<span class="stat-dot"></span>') : ''}
-          <span class="stat-label-text">${o.label}</span>
+        <div class="stat-label">
+          ${o.tone ? raw('<span class="' + cx('stat-dot', toneClass) + '"></span>') : ''}
+          <span>${o.label}</span>
         </div>
         <div class="${cx('stat-value', toneClass)}">${o.value}</div>
         ${o.hint ? raw('<div class="stat-hint">' + SM.dom.esc(o.hint) + '</div>') : ''}

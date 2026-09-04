@@ -190,6 +190,37 @@
 .leaflet-bar a:hover { background: var(--sunken) !important; }
 .leaflet-control-attribution { font-size: 10px; padding: 0 0.4rem; }
 
+/* ---------- the legend ---------- */
+
+/*
+  A pin carries two colours that mean different things, which is not something
+  anyone should have to work out. Small, in the corner, out of the way of the
+  region it is describing - and hidden on a phone, where the map is 300px tall
+  and every one of those pixels is the map.
+*/
+.map-legend {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 400;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.5625rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--hairline);
+  pointer-events: none;
+}
+.map-legend-place { font-size: 11.5px; font-weight: 600; color: var(--ink); }
+.map-legend-key { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+
+@media (min-width: 768px) {
+  .map-legend { display: flex; }
+}
+
 /* ---------- the pin ---------- */
 
 /*

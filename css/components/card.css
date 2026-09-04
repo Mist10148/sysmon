@@ -40,9 +40,8 @@
   font-weight: 500;
   color: var(--ink-muted);
 }
-/* The tone class sits on the label so the dot can take it from currentColor;
-   the words stay muted regardless of which tone that is. */
-.stat-label-text { color: var(--ink-muted); }
+/* The tone class lands on the dot itself, which is the only part that takes
+   it - the label stays muted whatever the tone is. */
 .stat-dot {
   width: 8px;
   height: 8px;
